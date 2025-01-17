@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".fragments.TestFragment1">
+
+    <!-- TODO: Update blank fragment layout -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/fuck_android_studio"
+        android:textSize="96sp" />
+
+    <com.example.nickeltack.metronome.VibratingDotView
+        android:id="@+id/vibratingDotViewTest1"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_width="300dp"
+        android:layout_height="300dp" />
+
+    <com.example.nickeltack.metronome.VibratingDotCircleView
+        android:id="@+id/vibratingDotCircleViewTest"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_marginTop="20dp"/>
+
+</FrameLayout>
