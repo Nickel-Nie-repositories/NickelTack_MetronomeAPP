@@ -48,9 +48,9 @@ public class ListDialogFragment extends DialogFragment {
         //builder.setTitle("Select Item");
 
         itemList = new ArrayList<>();
-        itemList.add(new ListItem("Item 1"));
-        itemList.add(new ListItem("Item 2"));
-        itemList.add(new ListItem("Item 3"));
+        itemList.add(new ListItem(PanelType.COMMON_METRONOME_PANEL,"Item 1"));
+        itemList.add(new ListItem(PanelType.COMMON_METRONOME_PANEL,"Item 2"));
+        itemList.add(new ListItem(PanelType.NONE,"ADD"));
 
         dialog.setContentView(R.layout.fragment_list_dialog);
 

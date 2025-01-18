@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -30,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private FuncListFragment listFragment;
     private View overlay;
 
+    public static MainActivity instance;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        instance = this;
 
         listFragment = new FuncListFragment();
         overlay = findViewById(R.id.overlay);
@@ -60,11 +65,11 @@ public class MainActivity extends AppCompatActivity {
             }
         );
 
-        Button showListButton = findViewById(R.id.showListButton);
+        ImageButton showListButton = findViewById(R.id.showListButton);
         showListButton.setOnClickListener(v -> {
             // 弹出 ListFragment
-            //showListFragment();
-            ChangeUserInterface(PanelType.COMMON_METRONOME_PANEL);
+            showListFragment();
+            //ChangeUserInterface(PanelType.COMMON_METRONOME_PANEL);
             // showTemporarySnackbar(v, "Dialog Opened");
             SnackbarUtils.showTemporarySnackbar(findViewById(android.R.id.content), "zzz");
 

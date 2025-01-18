@@ -1,14 +1,33 @@
 package com.example.nickeltack.funclist;
 
+import android.content.Context;
+
+import com.example.nickeltack.MainActivity;
+
 public class ListItem {
-    String title;
 
-    public ListItem(String title) {
-        this.title = title;
+    private final PanelType panelType;
+    private final String PanelName;
+
+    public ListItem(PanelType panelType, String PanelName) {
+        this.panelType = panelType;
+        this.PanelName = PanelName;
     }
 
-    public String getTitle() {
-        return title;
+    public String getPanelName() {
+        return PanelName;
     }
+
+    public PanelType getPanelType()
+    {
+        return panelType;
+    }
+
+    public void OnClick()
+    {
+        MainActivity.instance.ChangeUserInterface(this.panelType);
+    }
+
+
 }
 
