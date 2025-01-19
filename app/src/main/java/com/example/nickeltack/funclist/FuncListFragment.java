@@ -37,7 +37,7 @@ public class FuncListFragment extends Fragment {
         // 准备数据
         itemList = new ArrayList<>();
         itemList.add(new ListItem(PanelType.COMMON_METRONOME_PANEL,"Item 1"));
-        itemList.add(new ListItem(PanelType.COMMON_METRONOME_PANEL,"Item 2"));
+        itemList.add(new ListItem(PanelType.COMPLEX_METRONOME_PANEL,"Item 2"));
         itemList.add(new ListItem(PanelType.NONE,"ADD"));
 
         // 设置 RecyclerView 和 Adapter

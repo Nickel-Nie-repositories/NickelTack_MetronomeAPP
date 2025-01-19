@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 选中时的边框 -->
+    <item android:state_selected="true">
+        <shape xmlns:android="http://schemas.android.com/apk/res/android">
+            <solid android:color="#00FFFFFF"/> <!-- 背景透明 -->
+            <stroke android:color="#4CAF50" android:width="2dp"/> <!-- 绿色边框 -->
+            <corners android:radius="4dp"/> <!-- 圆角 -->
+        </shape>
+    </item>
+
+    <!-- 未选中时的边框 -->
+    <item>
+        <shape xmlns:android="http://schemas.android.com/apk/res/android">
+            <solid android:color="#00FFFFFF"/> <!-- 背景透明 -->
+            <stroke android:color="#B0B0B0" android:width="1dp"/> <!-- 灰色边框 -->
+            <corners android:radius="4dp"/> <!-- 圆角 -->
+        </shape>
+    </item>
+</selector>

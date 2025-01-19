@@ -1,10 +1,19 @@
 package com.example.nickeltack;
 
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -19,12 +28,17 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.fragment.app.ListFragment;
 
 import com.example.nickeltack.fragments.TestFragment2;
+import com.example.nickeltack.funclist.FileManager;
 import com.example.nickeltack.funclist.FuncListFragment;
 import com.example.nickeltack.funclist.ListDialogFragment;
 import com.example.nickeltack.funclist.PanelType;
 import com.example.nickeltack.metronome.CommonMetronomeFragment;
+import com.example.nickeltack.metronome.ComplexMetronomeFragment;
 import com.example.nickeltack.metronome.Metronome1Fragment;
 import com.google.android.material.snackbar.Snackbar;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,6 +46,11 @@ public class MainActivity extends AppCompatActivity {
     private View overlay;
 
     public static MainActivity instance;
+    private List<String> usedNames;
+
+    private int selectedIconId = -1;
+
+    private FileManager fileManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        usedNames = new ArrayList<>();
+        fileManager = FileManager.getInstance(String.valueOf(getFilesDir()));
 
         instance = this;
 
@@ -140,9 +162,138 @@ public class MainActivity extends AppCompatActivity {
                 ChangeUserInterface(new Metronome1Fragment());
                 break;
 
+            case COMPLEX_METRONOME_PANEL:
+                ChangeUserInterface(new ComplexMetronomeFragment());
+
             default:
                 break;
         }
+    }
+
+
+    public void showCreateDialog() {
+        // 创建Dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View view = inflater.inflate(R.layout.create_dialog_layout, null);
+
+        // 获取布局中的控件
+        HorizontalScrollView scrollView = view.findViewById(R.id.scrollView_for_icons);
+        EditText etName = view.findViewById(R.id.et_name);
+        Button btnConfirm = view.findViewById(R.id.btn_confirm);
+        Button btnCancel = view.findViewById(R.id.btn_cancel);
+        LinearLayout iconLayout = view.findViewById(R.id.iconLayout);
+
+        // 添加图标
+        List<Integer> iconIds = new ArrayList<>(PanelType.getIcons());
+
+        // 你可以根据需要添加更多图标
+
+        for (Integer iconId : iconIds) {
+            ImageView imageView = new ImageView(this);
+            imageView.setImageResource(iconId);
+            ViewGroup.LayoutParams layoutParams = new LinearLayout.LayoutParams(200, 200);
+            imageView.setLayoutParams(layoutParams);
+            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            imageView.setPadding(20, 20, 20, 20);
+            imageView.setTag(iconId); // 用tag来标识每个图标
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // 取消上一个选择的状态
+                    for (int i = 0; i < iconLayout.getChildCount(); i++) {
+                        ImageView iv = (ImageView) iconLayout.getChildAt(i);
+                        iv.setBackground(null); // 取消背景
+                    }
+                    // 设置当前选中
+                    imageView.setBackgroundResource(R.drawable.selected_border); // 选中的背景
+                    selectedIconId = iconId;
+                }
+            });
+            iconLayout.addView(imageView);
+        }
+
+        // 监听文本输入框
+        etName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                String name = s.toString().trim();
+                // 检查文件名是否已经存在
+                if (usedNames.contains(name)) {
+                    // 如果重名，禁用确认按钮，并提示用户
+                    btnConfirm.setEnabled(false);
+                    etName.setError("文件名已存在，请重新输入");
+                } else if (isValidFileName(name)) {
+                    // 如果文件名有效且不重复，启用确认按钮
+                    btnConfirm.setEnabled(true);
+                    etName.setError(null);
+                } else {
+                    // 文件名无效
+                    btnConfirm.setEnabled(false);
+                    etName.setError("文件名包含非法字符");
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {}
+        });
+
+        builder.setView(view);
+        AlertDialog dialog = builder.create();
+
+        // 提交按钮点击事件
+        btnConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String name = etName.getText().toString().trim();
+                if (usedNames.contains(name)) {
+                    Toast.makeText(MainActivity.this, "文件名已存在", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                }
+                else if (!isValidFileName(name))
+                {
+                    Toast.makeText(MainActivity.this, "文件名包含非法字符", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                }
+                else if(selectedIconId == -1)
+                {
+                    Toast.makeText(MainActivity.this, "未选择面板类型", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    // 处理确认逻辑
+                    usedNames.add(name); // 将文件名加入已使用名单
+                    Toast.makeText(MainActivity.this, "文件名已保存，文件类型ID为："+ selectedIconId, Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                }
+
+            }
+        });
+
+        // 取消按钮点击事件
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 关闭Dialog
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
+
+    // 检查文件名是否合法
+    private boolean isValidFileName(String name) {
+        // 文件名不能包含的非法字符（在Android中，文件名不能包含以下字符）
+        String illegalChars = "/\\?%*:|\"<>.";
+        for (char c : illegalChars.toCharArray()) {
+            if (name.indexOf(c) != -1) {
+                return false;
+            }
+        }
+        return true;
     }
 
 

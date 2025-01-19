@@ -14,7 +14,7 @@
         android:text="@string/fuck_android_studio"
         android:textSize="96sp" />
 
-    <com.example.nickeltack.metronome.VibratingDotView
+    <com.example.nickeltack.monitor.WaveformView
         android:id="@+id/vibratingDotViewTest1"
         android:layout_gravity="center_horizontal|bottom"
         android:layout_width="300dp"

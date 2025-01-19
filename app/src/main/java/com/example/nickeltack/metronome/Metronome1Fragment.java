@@ -99,4 +99,13 @@ public class Metronome1Fragment extends Fragment {
         return rootView;
 
     }
+
+
+    // 内部用于序列化的类
+    public static class MetronomePanelSetting
+    {
+
+    }
+
+
 }

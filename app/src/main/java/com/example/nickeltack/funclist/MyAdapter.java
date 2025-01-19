@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.nickeltack.MainActivity;
 import com.example.nickeltack.R;
 
 import java.util.List;
@@ -67,7 +68,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         else {
             holder.itemView.setOnClickListener(v -> {
                 // 处理点击事件
-
+                MainActivity.instance.showCreateDialog();
             });
         }
 

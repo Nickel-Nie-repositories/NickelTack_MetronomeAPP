@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.example.nickeltack.R;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +39,12 @@ public enum PanelType {
     {
         return panelIcons.getOrDefault(panelType, 0);
     }
+
+    public static Collection<Integer> getIcons()
+    {
+        return panelIcons.values();
+    }
+
 
 
 }

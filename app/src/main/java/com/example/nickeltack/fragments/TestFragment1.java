@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import com.example.nickeltack.R;
 import com.example.nickeltack.metronome.VibratingDotCircleView;
 import com.example.nickeltack.metronome.VibratingDotView;
+import com.example.nickeltack.monitor.WaveformView;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -64,9 +65,12 @@ public class TestFragment1 extends Fragment {
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_test1, container, false);
-        VibratingDotView vibratingDotView = rootView.findViewById(R.id.vibratingDotViewTest1);
-        vibratingDotView.setVibrationFrequency(200); // 频率为200ms
-        vibratingDotView.startContinuousVibration();
+//        VibratingDotView vibratingDotView = rootView.findViewById(R.id.vibratingDotViewTest1);
+//        vibratingDotView.setVibrationFrequency(200); // 频率为200ms
+//        vibratingDotView.startContinuousVibration();
+
+        WaveformView waveformView = rootView.findViewById(R.id.vibratingDotViewTest1);
+        waveformView.start();
 
         VibratingDotCircleView vibratingDotCircleView = rootView.findViewById(R.id.vibratingDotCircleViewTest);
         vibratingDotCircleView.setNumDots(6);
