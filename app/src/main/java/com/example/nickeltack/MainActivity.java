@@ -35,6 +35,7 @@ import com.example.nickeltack.funclist.PanelType;
 import com.example.nickeltack.metronome.CommonMetronomeFragment;
 import com.example.nickeltack.metronome.ComplexMetronomeFragment;
 import com.example.nickeltack.metronome.Metronome1Fragment;
+import com.example.nickeltack.monitor.RhythmDiagnotorFragment;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
@@ -164,6 +165,11 @@ public class MainActivity extends AppCompatActivity {
 
             case COMPLEX_METRONOME_PANEL:
                 ChangeUserInterface(new ComplexMetronomeFragment());
+                break;
+
+            case RHYTHM_DIAGNOTOR_PANEL:
+                ChangeUserInterface(new RhythmDiagnotorFragment());
+                break;
 
             default:
                 break;

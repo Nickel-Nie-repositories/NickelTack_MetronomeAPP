@@ -49,7 +49,9 @@ public class ListDialogFragment extends DialogFragment {
 
         itemList = new ArrayList<>();
         itemList.add(new ListItem(PanelType.COMMON_METRONOME_PANEL,"Item 1"));
-        itemList.add(new ListItem(PanelType.COMMON_METRONOME_PANEL,"Item 2"));
+        itemList.add(new ListItem(PanelType.COMPLEX_METRONOME_PANEL,"Item 2"));
+        itemList.add(new ListItem(PanelType.RHYTHM_DIAGNOTOR_PANEL,"Item 3"));
+        itemList.add(new ListItem(PanelType.STARTING_BLOCK_PANEL,"Item 4"));
         itemList.add(new ListItem(PanelType.NONE,"ADD"));
 
         dialog.setContentView(R.layout.fragment_list_dialog);

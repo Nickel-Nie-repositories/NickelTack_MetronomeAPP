@@ -1,12 +1,19 @@
 package com.example.nickeltack.fragments;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.nickeltack.R;
 import com.example.nickeltack.metronome.VibratingDotCircleView;
@@ -28,6 +35,10 @@ public class TestFragment1 extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    private WaveformView waveformView;
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+    private String[] permissions = {Manifest.permission.RECORD_AUDIO};
 
     public TestFragment1() {
         // Required empty public constructor
@@ -60,17 +71,42 @@ public class TestFragment1 extends Fragment {
         }
     }
 
+    private void requestAudioPermission() {
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            //waveformView.onPermissionGranted();
+        } else {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
+        }
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                //waveformView.onPermissionGranted();
+            } else {
+                Toast.makeText(getContext(), "权限被拒绝，无法录音", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_test1, container, false);
+
 //        VibratingDotView vibratingDotView = rootView.findViewById(R.id.vibratingDotViewTest1);
 //        vibratingDotView.setVibrationFrequency(200); // 频率为200ms
 //        vibratingDotView.startContinuousVibration();
 
-        WaveformView waveformView = rootView.findViewById(R.id.vibratingDotViewTest1);
-        waveformView.start();
+        waveformView = rootView.findViewById(R.id.vibratingDotViewTest1);
+        requestAudioPermission();
+        //waveformView.startRecording();
+
+        Button button2 = rootView.findViewById(R.id.button2);
+        button2.setOnClickListener(view -> waveformView.startRecording());
 
         VibratingDotCircleView vibratingDotCircleView = rootView.findViewById(R.id.vibratingDotCircleViewTest);
         vibratingDotCircleView.setNumDots(6);

@@ -13,14 +13,16 @@ public enum PanelType {
     NONE("无面板"),
     COMMON_METRONOME_PANEL("常规节拍器"),
     COMPLEX_METRONOME_PANEL("复杂节拍器"),
-    DASHBOARD_PANEL("仪表盘面板"),
-    HELP_PANEL("帮助面板"),
+    RHYTHM_DIAGNOTOR_PANEL("节奏诊断器"),
+    STARTING_BLOCK_PANEL("起跑器"),
     NOTIFICATION_PANEL("通知面板");
 
     @NonNull
     private static final Map<PanelType, Integer> panelIcons = new HashMap<>() {{
         put(PanelType.COMMON_METRONOME_PANEL, R.drawable.button_metronome1);
         put(PanelType.COMPLEX_METRONOME_PANEL, R.drawable.button_metronome2);
+        put(PanelType.RHYTHM_DIAGNOTOR_PANEL, R.drawable.button_ear);
+        put(PanelType.STARTING_BLOCK_PANEL,R.drawable.button_whistle);
     }};
 
     private final String description;
