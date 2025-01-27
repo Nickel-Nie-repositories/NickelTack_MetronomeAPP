@@ -16,9 +16,10 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.nickeltack.R;
-import com.example.nickeltack.metronome.VibratingDotCircleView;
-import com.example.nickeltack.metronome.VibratingDotView;
 import com.example.nickeltack.monitor.WaveformView;
+import com.example.nickeltack.starting.CheckableCirclesBar;
+import com.example.nickeltack.starting.MultiVibratingDotView;
+import com.example.nickeltack.starting.WaveformCircleView;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -35,6 +36,8 @@ public class TestFragment1 extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    private int index = 0;
 
     private WaveformView waveformView;
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
@@ -101,18 +104,34 @@ public class TestFragment1 extends Fragment {
 //        vibratingDotView.setVibrationFrequency(200); // 频率为200ms
 //        vibratingDotView.startContinuousVibration();
 
-        waveformView = rootView.findViewById(R.id.vibratingDotViewTest1);
+//        waveformView = rootView.findViewById(R.id.vibratingDotViewTest1);
+//        requestAudioPermission();
+//        //waveformView.startRecording();
+//
+//        Button button2 = rootView.findViewById(R.id.button2);
+//        button2.setOnClickListener(view -> waveformView.startRecording());
+
+        WaveformCircleView waveformCircleView = rootView.findViewById(R.id.vibratingDotViewTest1);
         requestAudioPermission();
-        //waveformView.startRecording();
-
+        waveformCircleView.vibrate(1f);
         Button button2 = rootView.findViewById(R.id.button2);
-        button2.setOnClickListener(view -> waveformView.startRecording());
+        //button2.setOnClickListener(view -> waveformCircleView.startRecording());
 
-        VibratingDotCircleView vibratingDotCircleView = rootView.findViewById(R.id.vibratingDotCircleViewTest);
-        vibratingDotCircleView.setNumDots(6);
-        vibratingDotCircleView.setIntervals(new int[]{400,400,200,200,200,200});
-        vibratingDotCircleView.setDotsAngles(new double[]{Math.PI/2,Math.PI/2,Math.PI/4,Math.PI/4,Math.PI/4});
-        vibratingDotCircleView.startNonUniformVibrating();
+
+        CheckableCirclesBar checkalbeCirclesBar = rootView.findViewById(R.id.checkableCirclesBar);
+        button2.setOnClickListener(view -> {
+            checkalbeCirclesBar.setCheck(index,true);
+            index = (index+1) %4;
+        }
+        );
+
+//        VibratingDotCircleView vibratingDotCircleView = rootView.findViewById(R.id.vibratingDotCircleViewTest);
+//        vibratingDotCircleView.setNumDots(6);
+//        vibratingDotCircleView.setIntervals(new int[]{400,400,200,200,200,200});
+//        vibratingDotCircleView.setDotsAngles(new double[]{Math.PI/2,Math.PI/2,Math.PI/4,Math.PI/4,Math.PI/4});
+//        vibratingDotCircleView.startNonUniformVibrating();
+
+        MultiVibratingDotView multiVibratingDotView = rootView.findViewById(R.id.vibratingDotCircleViewTest);
 
 //        vibratingDotCircleView.stopNonUniformVibrating();
 //        vibratingDotCircleView.setNumDots(5);

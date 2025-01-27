@@ -36,6 +36,7 @@ import com.example.nickeltack.metronome.CommonMetronomeFragment;
 import com.example.nickeltack.metronome.ComplexMetronomeFragment;
 import com.example.nickeltack.metronome.Metronome1Fragment;
 import com.example.nickeltack.monitor.RhythmDiagnotorFragment;
+import com.example.nickeltack.starting.StartingBlockFragment;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
@@ -170,6 +171,9 @@ public class MainActivity extends AppCompatActivity {
             case RHYTHM_DIAGNOTOR_PANEL:
                 ChangeUserInterface(new RhythmDiagnotorFragment());
                 break;
+
+            case STARTING_BLOCK_PANEL:
+                ChangeUserInterface(new StartingBlockFragment());
 
             default:
                 break;

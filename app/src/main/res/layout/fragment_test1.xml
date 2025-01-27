@@ -14,18 +14,26 @@
         android:text="@string/fuck_android_studio"
         android:textSize="96sp" />
 
-    <com.example.nickeltack.monitor.WaveformView
+    <com.example.nickeltack.starting.WaveformCircleView
         android:id="@+id/vibratingDotViewTest1"
         android:layout_gravity="center_horizontal|bottom"
         android:layout_width="300dp"
-        android:layout_height="300dp" />
+        android:layout_height="300dp"
+        android:layout_marginBottom="150dp"/>
 
-    <com.example.nickeltack.metronome.VibratingDotCircleView
+    <com.example.nickeltack.starting.MultiVibratingDotView
         android:id="@+id/vibratingDotCircleViewTest"
         android:layout_width="300dp"
         android:layout_height="300dp"
         android:layout_gravity="center_horizontal|top"
         android:layout_marginTop="20dp"/>
+
+    <com.example.nickeltack.starting.CheckableCirclesBar
+        android:id="@+id/checkableCirclesBar"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_margin="20dp"
+        android:layout_gravity="bottom"/>
 
     <Button
         android:id="@+id/button2"

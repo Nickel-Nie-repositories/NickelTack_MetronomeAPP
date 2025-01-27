@@ -12,12 +12,18 @@ import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.nickeltack.starting.AccentEvent;
+import com.example.nickeltack.starting.AccentEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class WaveformView extends View {
@@ -31,7 +37,15 @@ public class WaveformView extends View {
     private short[] audioBuffer;
     private Handler handler;
 
-    private boolean isPermissionGranted = false;
+    private List<AccentEventListener> listeners = new ArrayList<>();
+
+    private int lastAmplitude = 2147483647; //保存上一次的数据用于计算差值，初值为最大值以避免第一个时刻必然识别为重音
+    private int threshold = 12000; //基本阈值，低于这个阈值的不会识别为重音
+    private int risingEdgeThreshold = 7800; //上升沿阈值，两个时刻差值大于这个值将会被识别为重音
+    private int refractoryPeriod = 200; // 不应期，触发重音后将进入不应期，不应期内将不再会识别成重音
+    private int fallingEdgeThreshold = 6800; //下降沿阈值，两个时刻差值大于这个值时将会提前解除不应期
+    private boolean isInRefractoryPeriod = false; // 不应期标识，处于不应期将不会触发重音事件
+
 
     public WaveformView(Context context) {
         super(context);
@@ -78,7 +92,6 @@ public class WaveformView extends View {
 
     // 外部调用此方法以通知权限状态
     public void onPermissionGranted() {
-        isPermissionGranted = true;
         Toast.makeText(getContext(), "权限已获取", Toast.LENGTH_SHORT).show();
         startRecording();
     }
@@ -153,5 +166,44 @@ public class WaveformView extends View {
                 invalidate(); // 刷新视图
             }
         });
+
+        // 重音识别逻辑
+        boolean isAvailable = !isInRefractoryPeriod;
+        if(lastAmplitude - maxAmplitude > fallingEdgeThreshold)
+        {
+            isInRefractoryPeriod = false;
+        } // 识别为重音的条件：高于基本阈值，上升沿差值高于阈值，非不应期
+        else if(maxAmplitude > threshold && maxAmplitude- lastAmplitude > risingEdgeThreshold && isAvailable)
+        {
+            triggerEvent(maxAmplitude);
+        }
+        lastAmplitude = maxAmplitude;
+
+    }
+
+    // 注册监听器
+    public void addAccentEventListener(AccentEventListener listener) {
+        listeners.add(listener);
+    }
+
+    // 移除监听器
+    public void removeAccentEventListener(AccentEventListener listener) {
+        listeners.remove(listener);
+    }
+
+    // 触发事件
+    public void triggerEvent(int amplitude) {
+        AccentEvent event = new AccentEvent(this, amplitude, System.currentTimeMillis());
+        for (AccentEventListener listener : listeners) {
+            listener.onAccentEvent(event);
+        }
+    }
+
+    public void SetListenerArguments(int threshold, int risingEdgeThreshold, int fallingEdgeThreshold, int refractoryPeriod)
+    {
+        this.threshold = threshold;
+        this.risingEdgeThreshold = risingEdgeThreshold;
+        this.fallingEdgeThreshold = fallingEdgeThreshold;
+        this.refractoryPeriod = refractoryPeriod;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.nickeltack.metronome;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -61,7 +62,7 @@ public class VibratingDotCircleView extends FrameLayout {
             public void run() {
                 // 触发当前索引的振动点
                 VibratingDotView currentDot = dots.get(currentIntervalIndex);
-                currentDot.startVibration();  // 假设这是触发振动的方法
+                currentDot.startVibration();
 
                 int nextInterval = intervals[currentIntervalIndex % intervals.length];
                 // 更新当前振动点的索引
@@ -178,6 +179,7 @@ public class VibratingDotCircleView extends FrameLayout {
     }
 
     // 启动流水灯效果
+    @SuppressLint("DiscouragedApi")
     private void startVibration() {
         if (timer != null) {
             timer.cancel();

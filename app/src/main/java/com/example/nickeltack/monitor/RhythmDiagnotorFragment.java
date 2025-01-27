@@ -1,6 +1,5 @@
 package com.example.nickeltack.monitor;
 
-import android.animation.ValueAnimator;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,6 +16,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.nickeltack.R;
+import com.example.nickeltack.starting.AccentEvent;
+import com.example.nickeltack.starting.AccentEventListener;
 
 
 public class RhythmDiagnotorFragment extends Fragment {
@@ -54,6 +55,13 @@ public class RhythmDiagnotorFragment extends Fragment {
         logScrollView = view.findViewById(R.id.logScrollView);
         simulateLogUpdates();
 
+        waveformView.addAccentEventListener(new AccentEventListener() {
+            @Override
+            public void onAccentEvent(AccentEvent event) {
+                onAccentDetected(event.getAmplitude());
+            }
+        });
+
         // 设置按钮点击事件
         setupButtons();
 
@@ -84,7 +92,9 @@ public class RhythmDiagnotorFragment extends Fragment {
 
     private void startRecording() {
         // 开始录音逻辑
+        logTextView.setText("");
         waveformView.startRecording();
+
     }
 
     private void stopRecording() {
@@ -122,13 +132,13 @@ public class RhythmDiagnotorFragment extends Fragment {
     }
 
     public void addLogMessage(String message) {
-        logTextView.append(message + "\n");
+        logTextView.post(()->logTextView.append(message + "\n"));
         logScrollView.post(() -> logScrollView.fullScroll(View.FOCUS_DOWN)); // 滚动到底部
     }
 
-    private void OnLoudSoundDetected()
+    private void onAccentDetected(int amplitude)
     {
-        addLogMessage("检测到重音");
+        addLogMessage("检测到重音,振幅数据：" + amplitude);
     }
 
 
