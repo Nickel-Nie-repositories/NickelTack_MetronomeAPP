@@ -132,6 +132,11 @@ public class AudioManager {
         soundPool.play(soundId, 1f, 1f, 0, 0, 1f);
     }
 
+    public void playSound(int soundId, float volume)
+    {
+        soundPool.play(soundId, volume, volume, 0, 0, 1f);
+    }
+
 
     // 停止所有音效
     public void stopAllSounds() {

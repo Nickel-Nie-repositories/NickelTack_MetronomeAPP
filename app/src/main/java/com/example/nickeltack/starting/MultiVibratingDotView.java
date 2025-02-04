@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Toast;
 
+import com.example.nickeltack.metronome.AudioManager;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,6 +43,12 @@ public class MultiVibratingDotView extends View {
 
     private AnimatorSet[] animatorSets;
     private int animatorIndex = 0;
+
+    private int[] soundIds;
+    private float[] soundVolumes;
+    private AudioManager audioManager;
+    private int soundIndex = 0;
+    private int soundsNumber = 1;
 
     public MultiVibratingDotView(Context context) {
         this(context, null);
@@ -85,6 +93,8 @@ public class MultiVibratingDotView extends View {
             onLongPress(); // 长按
             return true;   // 返回true表示长按事件已经处理
         });
+
+        audioManager = AudioManager.getInstance(getContext());
     }
 
     @Override
@@ -222,6 +232,8 @@ public class MultiVibratingDotView extends View {
     {
         animatorSets[animatorIndex].start();
         animatorIndex = (animatorIndex + 1) % 4;
+        audioManager.playSound(soundIds[soundIndex],soundVolumes[soundIndex]);
+        soundIndex = (soundIndex + 1) % soundsNumber;
     }
 
 
@@ -234,6 +246,19 @@ public class MultiVibratingDotView extends View {
     // 长按事件
     private void onLongPress() {
         Toast.makeText(getContext(), "Long Press", Toast.LENGTH_SHORT).show();
+    }
+
+    public void setLongPressListener(OnLongClickListener onLongClickListener)
+    {
+        setOnLongClickListener(onLongClickListener);
+    }
+
+    public void setSounds(int[] soundIds, float[] soundVolumes)
+    {
+        this.soundIds =soundIds;
+        this.soundVolumes = soundVolumes;
+        this.soundsNumber = soundIds.length;
+        this.soundIndex = 0;
     }
 
 }

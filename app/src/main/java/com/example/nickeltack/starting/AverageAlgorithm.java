@@ -44,4 +44,9 @@ public enum AverageAlgorithm {
     public String getDescription() {
         return description;
     }
+
+    public static AverageAlgorithm[] getAllAverageModes()
+    {
+        return AverageAlgorithms.keySet().toArray(new AverageAlgorithm[0]);
+    }
 }

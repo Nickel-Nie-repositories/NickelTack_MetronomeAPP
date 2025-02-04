@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Threshold parameter -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:id="@+id/label_threshold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="基础阈值："
+            android:layout_marginEnd="8dp" />
+        <SeekBar
+            android:id="@+id/seekbar_threshold"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="31900" />
+        <EditText
+            android:id="@+id/edittext_threshold"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="100"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- Rising Edge Threshold parameter -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:id="@+id/label_rising_edge_threshold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="上升沿阈值："
+            android:layout_marginEnd="8dp" />
+        <SeekBar
+            android:id="@+id/seekbar_rising_edge_threshold"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="27000" />
+        <EditText
+            android:id="@+id/edittext_rising_edge_threshold"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="1000"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- Refractory Period parameter -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:id="@+id/label_refractory_period"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="不应期长度："
+            android:layout_marginEnd="8dp" />
+        <SeekBar
+            android:id="@+id/seekbar_refractory_period"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="1000" />
+        <EditText
+            android:id="@+id/edittext_refractory_period"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="0"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- Falling Edge Threshold parameter -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:id="@+id/label_falling_edge_threshold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="下降沿阈值："
+            android:layout_marginEnd="8dp" />
+        <SeekBar
+            android:id="@+id/seekbar_falling_edge_threshold"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="27000" />
+        <EditText
+            android:id="@+id/edittext_falling_edge_threshold"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="1000"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#808080"
+        android:layout_marginBottom="10dp"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/label_average_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="平均模式："
+            android:layout_gravity="start"
+            android:layout_marginEnd="8dp" />
+
+        <Spinner
+            android:id="@+id/average_mode_spinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:id="@+id/label_starting_beat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="起始拍数："
+            android:layout_marginEnd="8dp" />
+        <SeekBar
+            android:id="@+id/seekbar_starting_beat"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="8"
+            android:min="2"
+            android:tickMark="@drawable/tick_mark"
+            android:tickMarkTint="#D3D3D3"
+            android:progress="4"/>
+        <EditText
+            android:id="@+id/edittext_starting_beat"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="4"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="16dp">
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel" />
+        <Button
+            android:id="@+id/btn_confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Confirm"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
+</LinearLayout>
