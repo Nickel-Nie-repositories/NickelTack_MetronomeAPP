@@ -10,7 +10,7 @@
         android:id="@+id/et_input"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:hint="请输入数字或分数（例如：1+2+3, 4.5, 3/2）"
+        android:hint="请输入数字或分数的组合以描述节奏 \n（例如：1 + 1/4 + 1/4 + 1/2 + 1）"
         android:inputType="textMultiLine"
         android:scrollbars="vertical"
         android:importantForAccessibility="yes" />

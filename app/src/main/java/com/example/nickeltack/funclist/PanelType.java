@@ -47,6 +47,14 @@ public enum PanelType {
         return panelIcons.values();
     }
 
-
+    public static PanelType getPanelTypeById(int id)
+    {
+        for (Map.Entry<PanelType, Integer> entry : panelIcons.entrySet()) {
+            if (entry.getValue().equals(id)) {
+                return entry.getKey();
+            }
+        }
+        return NONE;
+    }
 
 }

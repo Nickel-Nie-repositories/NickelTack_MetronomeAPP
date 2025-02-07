@@ -64,6 +64,10 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
                 // 处理点击事件
                 item.OnClick();
             });
+            holder.itemView.setOnLongClickListener(v->{
+                item.OnLongClick();
+                return true;
+            });
         }
         else {
             holder.itemView.setOnClickListener(v -> {

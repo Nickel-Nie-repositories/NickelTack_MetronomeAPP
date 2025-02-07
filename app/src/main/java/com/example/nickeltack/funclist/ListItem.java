@@ -4,7 +4,9 @@ import android.content.Context;
 
 import com.example.nickeltack.MainActivity;
 
-public class ListItem {
+import java.io.Serializable;
+
+public class ListItem implements Serializable {
 
     private final PanelType panelType;
     private final String PanelName;
@@ -26,6 +28,11 @@ public class ListItem {
     public void OnClick()
     {
         MainActivity.instance.ChangeUserInterface(this.panelType);
+    }
+
+    public void OnLongClick()
+    {
+        MainActivity.instance.showDeleteFileDialog(this);
     }
 
 

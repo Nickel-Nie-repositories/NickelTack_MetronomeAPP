@@ -27,7 +27,9 @@ import android.widget.TextView;
 
 import com.example.nickeltack.R;
 import com.example.nickeltack.metronome.AudioManager;
+import com.example.nickeltack.metronome.Fraction;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -63,8 +65,15 @@ public class StartingBlockFragment extends Fragment {
     private int refractoryPeriod = 200;
     private int fallingEdgeThreshold = 6800;
 
+    private String fileName;
+
     public StartingBlockFragment() {
         // Required empty public constructor
+    }
+
+    public StartingBlockFragment(String fileName)
+    {
+        this.fileName = fileName;
     }
 
     @Override
@@ -364,7 +373,7 @@ public class StartingBlockFragment extends Fragment {
 
 
     // 数据类，用于存储每个物品项的状态
-    private static class ItemData {
+    private static class ItemData implements Serializable{
         private String soundName;
         private int seekBarValue;
 
@@ -446,7 +455,8 @@ public class StartingBlockFragment extends Fragment {
         seekBarThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextThreshold.setText(String.valueOf(progress + 100));
+                //editTextThreshold.setText(String.valueOf(progress + 100));
+                EditTextExtensions.setTextIfChanged(editTextThreshold,String.valueOf(progress + 100));
             }
 
             @Override
@@ -457,7 +467,8 @@ public class StartingBlockFragment extends Fragment {
         seekBarRisingEdgeThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextRisingEdgeThreshold.setText(String.valueOf(progress + 1000));
+                //editTextRisingEdgeThreshold.setText(String.valueOf(progress + 1000));
+                EditTextExtensions.setTextIfChanged(editTextRisingEdgeThreshold,String.valueOf(progress + 1000));
             }
 
             @Override
@@ -468,7 +479,8 @@ public class StartingBlockFragment extends Fragment {
         seekBarRefractoryPeriod.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextRefractoryPeriod.setText(String.valueOf(progress));
+                //editTextRefractoryPeriod.setText(String.valueOf(progress));
+                EditTextExtensions.setTextIfChanged(editTextRefractoryPeriod,String.valueOf(progress));
             }
 
             @Override
@@ -479,7 +491,8 @@ public class StartingBlockFragment extends Fragment {
         seekBarFallingEdgeThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextFallingEdgeThreshold.setText(String.valueOf(progress + 1000));
+                //editTextFallingEdgeThreshold.setText(String.valueOf(progress + 1000));
+                EditTextExtensions.setTextIfChanged(editTextFallingEdgeThreshold,String.valueOf(progress + 1000));
             }
 
             @Override
@@ -490,7 +503,9 @@ public class StartingBlockFragment extends Fragment {
         seekBarStartingBeat.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextStartingBeat.setText(String.valueOf(progress));
+                //editTextStartingBeat.setText(String.valueOf(progress));
+                EditTextExtensions.setTextIfChanged(editTextStartingBeat,String.valueOf(progress));
+
             }
 
             @Override
@@ -541,16 +556,48 @@ public class StartingBlockFragment extends Fragment {
 
         @Override
         public void onTextChanged(CharSequence charSequence, int start, int before, int after) {
-            try {
-                int value = Integer.parseInt(charSequence.toString());
-                seekBar.setProgress(value - offset);
-            } catch (NumberFormatException e) {
-                // Handle invalid input
-            }
+//            try {
+//                int value = Integer.parseInt(charSequence.toString());
+//                seekBar.setProgress(value - offset);
+//            } catch (NumberFormatException e) {
+//                // Handle invalid input
+//            }
         }
 
         @Override
-        public void afterTextChanged(Editable editable) {}
+        public void afterTextChanged(Editable editable) {
+            try {
+                int value = Integer.parseInt(editable.toString());
+                seekBar.setProgress(value - offset);
+            } catch (NumberFormatException ignored) {
+
+            }
+        }
+    }
+
+
+    // 内部用于序列化的类
+    public static class StartingBlockPanelSetting implements Serializable
+    {
+        private AverageAlgorithm AverageMode = AverageAlgorithm.ARITHMETIC_MEAN; // 平均模式，用于节拍间隔的计算
+        private int interval = 200;
+        private int startingAccentCount  = 4;
+        private boolean isStarted = false;
+        private List<ItemData> soundsList = new ArrayList<>();
+        private int threshold = 12000;
+        private int risingEdgeThreshold = 7800;
+        private int refractoryPeriod = 200;
+        private int fallingEdgeThreshold = 6800;
+    }
+
+    public void save()
+    {
+
+    }
+
+    public void load()
+    {
+
     }
 
 

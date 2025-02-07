@@ -97,6 +97,16 @@ public class AudioManager {
         return soundsDict.getOrDefault(name,-1);
     }
 
+    public String getNameBySoundId(int id)
+    {
+        for (Map.Entry<String, Integer> entry : soundsDict.entrySet()) {
+            if (entry.getValue().equals(id)) {
+                return entry.getKey();
+            }
+        }
+        return "【None】";
+    }
+
 
     public int getOrderBySoundId(int soundId)
     {

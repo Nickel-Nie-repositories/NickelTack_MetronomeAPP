@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="100dp"
     android:height="200dp"
@@ -7,13 +6,13 @@
 
     <!-- 音符竖线 -->
     <path
-        android:strokeWidth="4"
+        android:strokeWidth="6"
         android:strokeColor="#000000"
         android:fillColor="#000000"
-        android:pathData="M64,40 L64,170"/>
+        android:pathData="M43,50 L43,160"/>
 
-    <!-- 音符头（椭圆形） -->
+    <!-- 音符头（标准椭圆） -->
     <path
         android:fillColor="#000000"
-        android:pathData="M40,160 C30,170 30,190 50,190 C70,190 70,170 60,160 C50,150 50,150 40,160 Z"/>
+        android:pathData="M40,160 C40,175 55,185 70,180 C85,175 85,160 70,155 C55,150 40,155 40,160 Z"/>
 </vector>

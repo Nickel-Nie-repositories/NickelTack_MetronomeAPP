@@ -22,4 +22,16 @@ public class ColorManager {
     };
     static int colorArrayLength = colorArray.length;
 
+
+    public static int[] errorLevelColors = {
+            0xFF000066, // 深蓝
+            0xFF0000CC, // 中蓝
+            0xFF0000FF, // 浅蓝
+            0xFF000000, // 黑色
+            0xFFFF6666, // 浅红
+            0xFFFF3333, // 中红
+            0xFFCC0000  // 深红
+    };
+    public static int errorLevelPivot = 3;
+
 }

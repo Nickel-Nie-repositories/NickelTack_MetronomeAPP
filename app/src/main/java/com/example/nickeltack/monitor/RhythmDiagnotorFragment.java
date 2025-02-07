@@ -1,6 +1,7 @@
 package com.example.nickeltack.monitor;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,11 +26,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.nickeltack.R;
+import com.example.nickeltack.metronome.ColorManager;
+import com.example.nickeltack.metronome.Fraction;
 import com.example.nickeltack.starting.AccentEvent;
 import com.example.nickeltack.starting.AccentEventListener;
 import com.example.nickeltack.starting.AverageAlgorithm;
+import com.example.nickeltack.starting.EditTextExtensions;
 import com.example.nickeltack.starting.StartingBlockFragment;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 
@@ -53,14 +59,31 @@ public class RhythmDiagnotorFragment extends Fragment {
     private int fallingEdgeThreshold = 6800;
 
     private ReferenceSourceModel referenceSourceModel = ReferenceSourceModel.REFERENCE_VALUE; // 参考源模式，选择以哪一个节奏数值作为参考
-    private int settingReferenceBPM; // 设置中填入的参考BPM值
+    private int settingReferenceBPM = 181; // 设置中填入的参考BPM值
     private int currentReferenceBPM;
     private int currentReferenceMS;
-    private boolean isRelativeToleranceEnabled; // 是否启用相对容差
-    private boolean isAbsoluteToleranceEnabled; // 是否启用绝对容差
-    private float relativeTolerance; // 相对容差，为百分比转换而来的小数，bpm的差距高于该值则说明节奏过快或过慢
-    private int absoluteTolerance; //绝对容差，单位毫秒，时值差值超出该值则说明节奏过快或过慢
+    private boolean isRelativeToleranceEnabled = false; // 是否启用相对容差
+    private boolean isAbsoluteToleranceEnabled = false; // 是否启用绝对容差
+    private float relativeTolerance = 0.1f; // 相对容差，为百分比转换而来的小数，bpm的差距高于该值则说明节奏过快或过慢
+    private int absoluteTolerance = 100; //绝对容差，单位毫秒，时值差值超出该值则说明节奏过快或过慢
 
+    private long lastAccentTime = 0;
+
+    private MovingAverageQueue<Integer> globalMeanQueue = new MovingAverageQueue<>(50);
+    private MovingAverageQueue<Integer> recentMeanQueue = new MovingAverageQueue<>(5);
+
+    private int errorLevel = 0; //误差等级，共三级，表示本次节奏与参考节奏的误差量
+
+    private String fileName;
+
+
+    public RhythmDiagnotorFragment() {
+
+    }
+    public RhythmDiagnotorFragment(String fileName)
+    {
+        this.fileName = fileName;
+    }
 
     @Nullable
     @Override
@@ -80,12 +103,12 @@ public class RhythmDiagnotorFragment extends Fragment {
 
         logTextView = view.findViewById(R.id.logTextView);
         logScrollView = view.findViewById(R.id.logScrollView);
-        simulateLogUpdates();
+        //simulateLogUpdates();
 
         waveformView.addAccentEventListener(new AccentEventListener() {
             @Override
             public void onAccentEvent(AccentEvent event) {
-                onAccentDetected(event.getAmplitude());
+                onAccentDetected(event.getAmplitude(), event.getCurrentTime());
             }
         });
 
@@ -119,8 +142,8 @@ public class RhythmDiagnotorFragment extends Fragment {
 
     private void startRecording() {
         logTextView.setText("");
+        resetTempParameters();
         waveformView.startRecording();
-
     }
 
     private void stopRecording() {
@@ -128,7 +151,10 @@ public class RhythmDiagnotorFragment extends Fragment {
     }
 
     private void exportFile() {
-        // 导出文件逻辑
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain"); // 设置分享内容的类型（这里是文本）
+        shareIntent.putExtra(Intent.EXTRA_TEXT, logTextView.getText()); // 设置要分享的文本内容
+        startActivity(Intent.createChooser(shareIntent, "选择分享应用")); // 创建选择对话框，显示所有支持分享文本的应用
     }
 
     private void openSettings() {
@@ -142,16 +168,22 @@ public class RhythmDiagnotorFragment extends Fragment {
         showParameterSettingDialog();
     }
 
-    // 设置大数字内容和颜色
-    public void setLargeNumber(String number, int color) {
-        largeNumber.setText(number);
-        largeNumber.setTextColor(color);
+
+    public void setLargeNumber(String number) {
+        largeNumber.post(()-> largeNumber.setText(number));
+    }
+    public void setLargeNumberColor(int color) {
+        largeNumber.post(()-> largeNumber.setTextColor(color));
+
     }
 
-    // 设置小数字内容和颜色
-    public void setSmallNumber(String number, int color) {
-        smallNumber.setText(number);
-        smallNumber.setTextColor(color);
+    public void setSmallNumber(String number) {
+        smallNumber.post(new Runnable() {
+            @Override
+            public void run() {
+                smallNumber.setText(number);
+            }
+        });
     }
 
 
@@ -159,7 +191,7 @@ public class RhythmDiagnotorFragment extends Fragment {
         // 模拟定时增加日志
         new Handler().postDelayed(() -> {
             addLogMessage("Clock Log Message " + System.currentTimeMillis());
-            simulateLogUpdates(); // 循环调用
+            simulateLogUpdates();
         }, 2000);
     }
 
@@ -168,9 +200,70 @@ public class RhythmDiagnotorFragment extends Fragment {
         logScrollView.post(() -> logScrollView.fullScroll(View.FOCUS_DOWN)); // 滚动到底部
     }
 
-    private void onAccentDetected(int amplitude)
+    private void onAccentDetected(int amplitude, long currentTime)
     {
         addLogMessage("检测到重音,振幅数据：" + amplitude);
+        if (lastAccentTime == 0)
+        {
+            addLogMessage("————本次录制第一拍：" + currentTime);
+        }
+        else
+        {
+            // 不是第一拍则计算间隔 和 BPM
+            int interval = (int) (currentTime - lastAccentTime);
+            addLogMessage("————本拍毫秒数："+ interval);
+            int currBPM = Math.round(60000f / interval);
+            //Log.d("TAG_0","计算BPM" + currBPM);
+            // 与参考值比对，获得BPM的真值
+            Fraction fraction = new Fraction((double) currentReferenceBPM / currBPM);
+            int trueCurrBPM = currBPM * fraction.getNumerator() / fraction.getDenominator();
+            setLargeNumber(trueCurrBPM + " BPM");
+            setSmallNumber("（*" + fraction.toString() + "）");
+            //Log.d("TAG_0","显示BPM" + trueCurrBPM);
+            int errorSymbol = Integer.compare(trueCurrBPM - currentReferenceBPM,0); //误差符号，可取0 ，-1 ，+1，表示误差的正负。
+//            int[] errorLevel = {0}; //误差等级，共三级，表示本次节奏与参考节奏的误差量 // java不能引用传值...
+            // 与参考值比对，检查节奏
+            if (isRelativeToleranceEnabled)
+            {
+                double relativeError = (double) Math.abs(trueCurrBPM - currentReferenceBPM) / currentReferenceBPM;
+                onRelativeErrorDetected(relativeError);
+            }
+            if (isAbsoluteToleranceEnabled)
+            {
+                int absoluteError = Math.abs(interval - currentReferenceMS);
+                onAbsoluteErrorDetected(absoluteError);
+            }
+            setLargeNumberColor(ColorManager.errorLevelColors[ColorManager.errorLevelPivot + errorSymbol * errorLevel]);
+            errorLevel = 0;
+            // 更新参考值
+            updateCurrentReferenceBPM(trueCurrBPM);
+        }
+        lastAccentTime = currentTime;
+    }
+
+    private void onRelativeErrorDetected(double relativeError)
+    {
+        for (int i =3; i > 0; i--)
+        {
+            if(relativeError > i*relativeTolerance)
+            {
+                errorLevel = Math.max(errorLevel,i);
+                addLogMessage("————超出相对误差容限："+ Math.round(relativeTolerance*100) + "%，相对误差为："+ Math.round(relativeError*100) + "%");
+                return;
+            }
+        }
+    }
+    private void onAbsoluteErrorDetected(int absoluteError)
+    {
+        for (int i =3; i > 0; i--)
+        {
+            if(absoluteError > i*absoluteTolerance)
+            {
+                errorLevel = Math.max(errorLevel,i);
+                addLogMessage("————超出绝对误差容限："+ absoluteTolerance + "ms，绝对误差为："+ absoluteError + "ms");
+                return;
+            }
+        }
     }
 
     public void showParameterSettingDialog() {
@@ -241,7 +334,8 @@ public class RhythmDiagnotorFragment extends Fragment {
         seekBarThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextThreshold.setText(String.valueOf(progress + 100));
+                //editTextThreshold.setText(String.valueOf(progress + 100));
+                EditTextExtensions.setTextIfChanged(editTextThreshold,String.valueOf(progress + 100));
             }
 
             @Override
@@ -252,7 +346,8 @@ public class RhythmDiagnotorFragment extends Fragment {
         seekBarRisingEdgeThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextRisingEdgeThreshold.setText(String.valueOf(progress + 1000));
+                //editTextRisingEdgeThreshold.setText(String.valueOf(progress + 1000));
+                EditTextExtensions.setTextIfChanged(editTextRisingEdgeThreshold,String.valueOf(progress + 1000));
             }
 
             @Override
@@ -263,7 +358,8 @@ public class RhythmDiagnotorFragment extends Fragment {
         seekBarRefractoryPeriod.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextRefractoryPeriod.setText(String.valueOf(progress));
+                //editTextRefractoryPeriod.setText(String.valueOf(progress));
+                EditTextExtensions.setTextIfChanged(editTextRefractoryPeriod,String.valueOf(progress));
             }
 
             @Override
@@ -274,7 +370,8 @@ public class RhythmDiagnotorFragment extends Fragment {
         seekBarFallingEdgeThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextFallingEdgeThreshold.setText(String.valueOf(progress + 1000));
+                //editTextFallingEdgeThreshold.setText(String.valueOf(progress + 1000));
+                EditTextExtensions.setTextIfChanged(editTextFallingEdgeThreshold,String.valueOf(progress + 1000));
             }
 
             @Override
@@ -285,7 +382,8 @@ public class RhythmDiagnotorFragment extends Fragment {
         seekBarSettingReferenceValue.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextSettingReferenceValue.setText(String.valueOf(progress));
+                //editTextSettingReferenceValue.setText(String.valueOf(progress));
+                EditTextExtensions.setTextIfChanged(editTextSettingReferenceValue,String.valueOf(progress));
             }
 
             @Override
@@ -296,7 +394,8 @@ public class RhythmDiagnotorFragment extends Fragment {
         seekBarRelativeTolerance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextRelativeTolerance.setText(String.valueOf(progress));
+                //editTextRelativeTolerance.setText(String.valueOf(progress));
+                EditTextExtensions.setTextIfChanged(editTextRelativeTolerance,String.valueOf(progress));
             }
 
             @Override
@@ -307,7 +406,8 @@ public class RhythmDiagnotorFragment extends Fragment {
         seekBarAbsoluteTolerance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                editTextAbsoluteTolerance.setText(String.valueOf(progress));
+                //editTextAbsoluteTolerance.setText(String.valueOf(progress));
+                EditTextExtensions.setTextIfChanged(editTextAbsoluteTolerance,String.valueOf(progress));
             }
 
             @Override
@@ -348,6 +448,68 @@ public class RhythmDiagnotorFragment extends Fragment {
         });
 
         dialog.show();
+    }
+
+    private void updateCurrentReferenceMS()
+    {
+        this.currentReferenceMS = Math.round(60000f / currentReferenceBPM);
+    }
+
+    private void updateCurrentReferenceBPM(int currBeatBPM)
+    {
+        switch (referenceSourceModel)
+        {
+            case REFERENCE_VALUE:
+                break;
+            case REAL_TIME:
+                currentReferenceBPM = currBeatBPM;
+                updateCurrentReferenceMS();
+                break;
+            case GLOBAL_MEAN:
+                currentReferenceBPM = (int) Math.round(globalMeanQueue.addData(currBeatBPM));
+                updateCurrentReferenceMS();
+                break;
+            case RECENT_RHYTHM:
+                currentReferenceBPM = (int) Math.round(recentMeanQueue.addData(currBeatBPM));
+                updateCurrentReferenceMS();
+                break;
+        }
+    }
+
+    private void resetTempParameters()
+    {
+        lastAccentTime = 0;
+        currentReferenceBPM = settingReferenceBPM;
+        updateCurrentReferenceMS();
+        globalMeanQueue.clear();
+        recentMeanQueue.clear();
+    }
+
+    // 内部用于序列化的类
+    public static class RhythmDiagnotorPanelSetting implements Serializable
+    {
+        private int threshold = 12000;
+        private int risingEdgeThreshold = 7800;
+        private int refractoryPeriod = 200;
+        private int fallingEdgeThreshold = 6800;
+        private ReferenceSourceModel referenceSourceModel = ReferenceSourceModel.REFERENCE_VALUE; // 参考源模式，选择以哪一个节奏数值作为参考
+        private int settingReferenceBPM = 181; // 设置中填入的参考BPM值
+        private boolean isRelativeToleranceEnabled = false; // 是否启用相对容差
+        private boolean isAbsoluteToleranceEnabled = false; // 是否启用绝对容差
+        private float relativeTolerance = 0.1f; // 相对容差，为百分比转换而来的小数，bpm的差距高于该值则说明节奏过快或过慢
+        private int absoluteTolerance = 100; //绝对容差，单位毫秒，时值差值超出该值则说明节奏过快或过慢
+
+
+    }
+
+    public void save()
+    {
+
+    }
+
+    public void load()
+    {
+
     }
 
 

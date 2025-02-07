@@ -268,5 +268,14 @@ public class VibratingDotCircleView extends FrameLayout {
         invalidate();
     }
 
+    public String[] getSounds()
+    {
+        String[] sounds = new String[dots.size()];
+        for (int i = 0; i< dots.size(); i++)
+        {
+            sounds[i] = dots.get(i).getSoundName();
+        }
+        return sounds;
+    }
 
 }

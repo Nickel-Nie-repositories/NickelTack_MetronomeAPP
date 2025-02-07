@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="10dp"
+    android:padding="3dp"
     android:orientation="horizontal"
     android:background="@drawable/item_border"
     android:layout_margin="2dp">
@@ -10,15 +10,15 @@
     <!-- 圆形图标 -->
     <ImageView
         android:id="@+id/icon"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginEnd="18dp"
-        android:padding="2dp"
-        android:src="@drawable/button_metronome1"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_gravity="center"
-        android:scaleType="centerCrop"
+        android:layout_marginEnd="18dp"
         android:background="@android:color/transparent"
-        android:contentDescription="Icon" />
+        android:contentDescription="Icon"
+        android:padding="2dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/button_metronome1" />
 
     <!-- 文字部分 -->
     <TextView

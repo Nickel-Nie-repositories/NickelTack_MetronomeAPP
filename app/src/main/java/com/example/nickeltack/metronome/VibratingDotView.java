@@ -41,9 +41,8 @@ public class VibratingDotView extends View {
     private int vibrationFrequency = 500; // 默认频率为 500ms
     private Handler handler;
     private Runnable vibrationRunnable;
-    private MediaPlayer mediaPlayer;
-    private int selectedSound = 0; // 默认无声音，0表示无声音
-    private final String[] soundOptions = {"【None】", "arcade game jump coin", "classic click", "modern technology select"};
+
+    //private final String[] soundOptions = {"【None】", "arcade game jump coin", "classic click", "modern technology select"};
 
     private AudioManager audioManager;
 
@@ -337,6 +336,11 @@ public class VibratingDotView extends View {
 
     public void onLongClick() {
         showSoundSelectionDialog();
+    }
+
+    public String getSoundName()
+    {
+        return audioManager.getNameBySoundId(soundId);
     }
 
 //    @Override

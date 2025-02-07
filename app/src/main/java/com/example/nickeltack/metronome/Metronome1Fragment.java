@@ -11,18 +11,33 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.example.nickeltack.R;
+
+import java.io.Serializable;
 
 
 public class Metronome1Fragment extends Fragment {
 
 
+    private Fraction timeSignature = new Fraction("4/4");
+    private int quarterTimeValue = 120;
+    private VibratingDotCircleView vibratingDotCircleView;
+
+    private String fileName;
+
+    boolean isPlaying = false;
+
     public Metronome1Fragment() {
         // Required empty public constructor
+    }
+
+    public Metronome1Fragment(String fileName)
+    {
+        this.fileName = fileName;
     }
 
 
@@ -54,8 +69,9 @@ public class Metronome1Fragment extends Fragment {
             @Override
             public void afterTextChanged(Editable editable) {
                 String input = editable.toString();
+                int value = 0;
                 try {
-                    int value = Integer.parseInt(input);
+                    value = Integer.parseInt(input);
 
                     // 如果超出范围，给出提示并清除输入
                     if (value < 0 || value > 500) {
@@ -65,6 +81,11 @@ public class Metronome1Fragment extends Fragment {
                     // 如果输入的不是数字，给出提示
                     editText.setError("请输入有效的数字");
                 }
+                if (value!= 0)
+                {
+                    quarterTimeValue = value;
+                }
+                updateVibratingDotSetting();
             }
         });
 
@@ -86,7 +107,9 @@ public class Metronome1Fragment extends Fragment {
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 // 根据选择的项执行相应操作
                 String selectedItem = parentView.getItemAtPosition(position).toString();
-                Toast.makeText(getContext(), "选择了: " + selectedItem, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "选择了: " + selectedItem, Toast.LENGTH_SHORT).show();
+                timeSignature = new Fraction(selectedItem);
+                updateVibratingDotSetting();
             }
 
             @Override
@@ -95,14 +118,74 @@ public class Metronome1Fragment extends Fragment {
             }
         });
 
+        // 振动点配置
+        vibratingDotCircleView = rootView.findViewById(R.id.vibrating_dot_circle);
+
+        // 绑定开始/停止按钮
+        Button palyButton = rootView.findViewById(R.id.play_pause_button);
+        Button stopButton = rootView.findViewById(R.id.stop_button);
+        palyButton.setOnClickListener((view) -> startVibrating());
+        stopButton.setOnClickListener((view) -> stopVibrating());
+        updateVibratingDotSetting();
 
         return rootView;
 
     }
 
+    private void startVibrating()
+    {
+        if(!isPlaying){
+            vibratingDotCircleView.startNonUniformVibrating();
+            isPlaying = true;
+        }
+
+    }
+    private void stopVibrating()
+    {
+        if(isPlaying){
+            vibratingDotCircleView.stopNonUniformVibrating();
+            isPlaying = false;
+        }
+
+    }
+
+    private void updateVibratingDotSetting()
+    {
+        stopVibrating();
+        int denominator = timeSignature.getDenominator();
+        int nominator = timeSignature.getNumerator();
+        vibratingDotCircleView.setNumDots(nominator);
+        int interval = Math.round(60000f / quarterTimeValue) * 4 / denominator;
+        int[] intervals = new int[1];
+        intervals[0] = interval;
+        vibratingDotCircleView.setIntervals(intervals);
+    }
+
+    private void updateSoundsSetting()
+    {
+
+    }
+
+    private void updateSoundsRecord()
+    {
+
+    }
+
 
     // 内部用于序列化的类
-    public static class MetronomePanelSetting
+    public static class MetronomePanelSetting implements Serializable
+    {
+        private Fraction timeSignature = new Fraction("4/4");
+        private int quarterTimeValue = 120;
+        private String[] Sounds;
+    }
+
+    public void save()
+    {
+
+    }
+
+    public void load()
     {
 
     }

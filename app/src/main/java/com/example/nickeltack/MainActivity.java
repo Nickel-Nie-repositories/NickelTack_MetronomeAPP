@@ -1,10 +1,14 @@
 package com.example.nickeltack;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.SpannableString;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +35,7 @@ import com.example.nickeltack.fragments.TestFragment2;
 import com.example.nickeltack.funclist.FileManager;
 import com.example.nickeltack.funclist.FuncListFragment;
 import com.example.nickeltack.funclist.ListDialogFragment;
+import com.example.nickeltack.funclist.ListItem;
 import com.example.nickeltack.funclist.PanelType;
 import com.example.nickeltack.metronome.CommonMetronomeFragment;
 import com.example.nickeltack.metronome.ComplexMetronomeFragment;
@@ -65,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        usedNames = new ArrayList<>();
         fileManager = FileManager.getInstance(String.valueOf(getFilesDir()));
 
         instance = this;
@@ -95,14 +99,14 @@ public class MainActivity extends AppCompatActivity {
             showListFragment();
             //ChangeUserInterface(PanelType.COMMON_METRONOME_PANEL);
             // showTemporarySnackbar(v, "Dialog Opened");
-            SnackbarUtils.showTemporarySnackbar(findViewById(android.R.id.content), "zzz");
+            //SnackbarUtils.showTemporarySnackbar(findViewById(android.R.id.content), "zzz");
 
             //showListDialog();
         });
 
         overlay.setOnClickListener(v -> {
             hideListFragment();
-            SnackbarUtils.showTemporarySnackbar(findViewById(android.R.id.content), "hide list");
+            //SnackbarUtils.showTemporarySnackbar(findViewById(android.R.id.content), "hide list");
 
         });
 
@@ -123,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
     // 关闭列表
     private void hideListFragment() {
         getSupportFragmentManager().beginTransaction().remove(listFragment).commit();
-        Toast.makeText(MainActivity.this, "outside clicked!", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(MainActivity.this, "outside clicked!", Toast.LENGTH_SHORT).show();
         overlay.setVisibility(View.GONE);
 
     }
@@ -229,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 String name = s.toString().trim();
                 // 检查文件名是否已经存在
-                if (usedNames.contains(name)) {
+                if (listFragment.getUsedNames().contains(name)) {
                     // 如果重名，禁用确认按钮，并提示用户
                     btnConfirm.setEnabled(false);
                     etName.setError("文件名已存在，请重新输入");
@@ -259,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String name = etName.getText().toString().trim();
-                if (usedNames.contains(name)) {
+                if (listFragment.getUsedNames().contains(name)) {
                     Toast.makeText(MainActivity.this, "文件名已存在", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                 }
@@ -274,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else {
                     // 处理确认逻辑
-                    usedNames.add(name); // 将文件名加入已使用名单
+                    createNewPanel(new ListItem(PanelType.getPanelTypeById(selectedIconId),name));
                     Toast.makeText(MainActivity.this, "文件名已保存，文件类型ID为："+ selectedIconId, Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                 }
@@ -306,6 +310,55 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public void removePanel(ListItem item)
+    {
+        listFragment.removeListItem(item);
+    }
+
+    public void createNewPanel(ListItem item)
+    {
+        addPanel(item);
+    }
+    public void addPanel(ListItem item)
+    {
+        listFragment.addListItem(item);
+    }
+
+
+    public void showDeleteFileDialog(ListItem item) {
+        // 构建提示信息
+        String message = "确定要删除文件: " + item.getPanelName() + " 吗？";
+
+        // 创建一个 SpannableString 用于处理部分文字颜色
+        SpannableString spannableMessage = new SpannableString(message);
+
+        // 找到文件名的位置，并设置该部分的字体颜色
+        int start = message.indexOf(item.getPanelName());
+        int end = start + item.getPanelName().length();
+        spannableMessage.setSpan(new ForegroundColorSpan(Color.RED), start, end, 0); // 设置文件名部分为红色
+
+        // 创建对话框
+        new AlertDialog.Builder(MainActivity.this)
+                .setTitle("删除文件")
+                .setMessage(spannableMessage) // 设置显示的消息
+                .setCancelable(false) // 让对话框不能被取消
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // 用户点击确定，执行删除操作
+                        removePanel(item);
+                        Toast.makeText(MainActivity.this, "文件已删除: " + item.getPanelName(), Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // 用户点击取消，不执行任何操作
+                        Toast.makeText(MainActivity.this, "取消删除", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .show(); // 显示对话框
+    }
 
 
 }

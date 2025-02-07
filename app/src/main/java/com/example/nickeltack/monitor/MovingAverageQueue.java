@@ -39,4 +39,9 @@ public class MovingAverageQueue <T extends Number> {
         return sum;
     }
 
+    public void clear() {
+        window.clear(); // 清空队列
+        sum = 0.0; // 重置总和
+    }
+
 }

@@ -6,25 +6,38 @@ import androidx.fragment.app.Fragment;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
+
 import androidx.appcompat.app.AlertDialog;
 
-import com.example.nickeltack.MainActivity;
 import com.example.nickeltack.R;
+
+import java.io.Serializable;
+import java.util.Arrays;
 
 
 public class ComplexMetronomeFragment extends Fragment {
 
+    int quarterTimeValue = 120;
+    VibratingDotCircleView vibratingDotCircleView;
+    boolean isPlaying = false;
 
-    private String rhythmsInput = ""; // 用于存储输入的节奏型字符串
+    private String rhythmsInput = "1/4 + 1/4 + 1/8 + 1/8 + 1/8 + 1/8"; // 用于存储输入的节奏型字符串
+
+    private String fileName;
 
     public ComplexMetronomeFragment() {
         // Required empty public constructor
+    }
+
+    public ComplexMetronomeFragment(String fileName)
+    {
+        this.fileName = fileName;
     }
 
 
@@ -58,8 +71,9 @@ public class ComplexMetronomeFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable editable) {
                 String input = editable.toString();
+                int value = 0;
                 try {
-                    int value = Integer.parseInt(input);
+                    value = Integer.parseInt(input);
 
                     // 如果超出范围，给出提示并清除输入
                     if (value < 0 || value > 500) {
@@ -69,6 +83,11 @@ public class ComplexMetronomeFragment extends Fragment {
                     // 如果输入的不是数字，给出提示
                     editText.setError("请输入有效的数字");
                 }
+                if (value!= 0)
+                {
+                    quarterTimeValue = value;
+                }
+                updateVibratingDotSetting();
             }
         });
 
@@ -78,6 +97,17 @@ public class ComplexMetronomeFragment extends Fragment {
                 showInputDialog();
             }
         });
+
+        // 振动点配置
+        vibratingDotCircleView = rootView.findViewById(R.id.vibrating_dot_circle);
+
+        // 绑定开始/停止按钮
+        Button palyButton = rootView.findViewById(R.id.play_pause_button);
+        Button stopButton = rootView.findViewById(R.id.stop_button);
+        palyButton.setOnClickListener((view) -> startVibrating());
+        stopButton.setOnClickListener((view) -> stopVibrating());
+
+        updateVibratingDotSetting();
 
         return rootView;
     }
@@ -120,7 +150,8 @@ public class ComplexMetronomeFragment extends Fragment {
         // 点击确认按钮的逻辑
         btnConfirm.setOnClickListener(v -> {
             rhythmsInput = etInput.getText().toString();
-            Toast.makeText(getContext(), "输入已保存: " + rhythmsInput, Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getContext(), "输入已保存: " + rhythmsInput, Toast.LENGTH_SHORT).show();
+            updateVibratingDotSetting();
             // 关闭对话框
             alertDialog.dismiss();
         });
@@ -136,8 +167,88 @@ public class ComplexMetronomeFragment extends Fragment {
     // 验证输入是否合法的方法
     private boolean isValidInput(String input) {
         // 正则表达式验证规则：数字、分数和符号（加号、逗号、分号、空格）
-        String regex = "^(\\d+(\\.\\d+)?(\\/\\d+(\\.\\d+)?)?([+\\s,;]?\\d+(\\.\\d+)?(\\/\\d+(\\.\\d+)?)?)*)$";
+        //String regex = "^(\\d+(\\.\\d+)?(\\/\\d+(\\.\\d+)?)?([+\\s,;]?\\d+(\\.\\d+)?(\\/\\d+(\\.\\d+)?)?)*)$";
+        String regex = "^(\\s*\\d+(\\.\\d+)?(\\/\\d+(\\.\\d+)?)?\\s*([+\\s,;]\\s*\\d+(\\.\\d+)?(\\/\\d+(\\.\\d+)?)?\\s*)*)$";
         return input.matches(regex);
+    }
+
+    private void startVibrating()
+    {
+        if(!isPlaying){
+            vibratingDotCircleView.startNonUniformVibrating();
+            isPlaying = true;
+        }
+    }
+    private void stopVibrating()
+    {
+        if(isPlaying){
+            vibratingDotCircleView.stopNonUniformVibrating();
+            isPlaying = false;
+        }
+    }
+
+    private void updateVibratingDotSetting()
+    {
+        stopVibrating();
+        int semibreveInterval = Math.round(60000f / quarterTimeValue) * 4;
+        String[] tokens = rhythmsInput.split("[\\s,;+]+");
+        //Log.d("TAG_0","tokens:" + Arrays.toString(tokens));
+        int[] intervals = new int[tokens.length];
+        int sumTimeValue = 0;
+        for (int i=0; i<tokens.length; i++)
+        {
+            intervals[i] = (int) Math.round(StringToNumber(tokens[i])*semibreveInterval);
+            //Log.d("TAG_0","interval[" + i+"]: "+ intervals[i]);
+            sumTimeValue += intervals[i];
+        }
+        //Log.d("TAG_0","TimeValue Sum: "+ sumTimeValue);
+        double[] newDotsAngles = new double[tokens.length-1];
+        for (int i=0; i<newDotsAngles.length; i++)
+        {
+            newDotsAngles[i] = Math.PI * 2 * intervals[i] / sumTimeValue;
+            //Log.d("TAG_0","Dot Angles[" + i+"]: "+ newDotsAngles[i]);
+        }
+        vibratingDotCircleView.setNumDots(intervals.length);
+        vibratingDotCircleView.setIntervals(intervals);
+        vibratingDotCircleView.setDotsAngles(newDotsAngles);
+    }
+
+    private double StringToNumber(String s){
+        String[] parts = s.split("/");
+        double ret;
+        if (parts.length == 1) {
+            ret = Double.parseDouble(parts[0]);
+        }
+        else if (parts.length == 2) {
+            ret = Double.parseDouble(parts[0]) / Double.parseDouble(parts[1]);
+        }
+        else {
+            ret = 0.0;
+        }
+        return ret;
+    }
+
+    private void updateSoundsSetting()
+    {
+
+    }
+
+    // 内部用于序列化的类
+    public static class ComplexMetronomePanelSetting implements Serializable
+    {
+        private String rhythmsInput = "1/4 + 1/4 + 1/8 + 1/8 + 1/8 + 1/8";
+        private int quarterTimeValue = 120;
+        private String[] Sounds;
+    }
+
+    public void save()
+    {
+
+    }
+
+    public void load()
+    {
+
     }
 
 }
