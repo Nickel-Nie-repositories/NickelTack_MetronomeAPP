@@ -248,7 +248,7 @@ public class ComplexMetronomeFragment extends Fragment {
 
     private void updateSoundsSetting(String[] sounds)
     {
-        if(vibratingDotCircleView == null){return;}
+        if(vibratingDotCircleView == null || sounds == null || sounds.length == 0){return;}
         //Log.d("TAG_0","set sounds:"+ Arrays.toString(sounds));
         vibratingDotCircleView.setSounds(sounds);
     }
@@ -264,7 +264,7 @@ public class ComplexMetronomeFragment extends Fragment {
     {
         private String rhythmsInput = "1/4 + 1/4 + 1/8 + 1/8 + 1/8 + 1/8";
         private int quarterTimeValue = 120;
-        private String[] Sounds;
+        private String[] Sounds = {"【None】", "【None】", "【None】", "【None】"};
 
         ComplexMetronomePanelSetting()
         {

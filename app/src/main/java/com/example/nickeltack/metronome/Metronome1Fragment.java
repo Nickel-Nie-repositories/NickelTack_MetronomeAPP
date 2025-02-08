@@ -182,7 +182,7 @@ public class Metronome1Fragment extends Fragment {
 
     private void updateSoundsSetting(String[] sounds)
     {
-        if(vibratingDotCircleView == null){return;}
+        if(vibratingDotCircleView == null || sounds == null || sounds.length == 0){return;}
         //Log.d("TAG_0","set sounds:"+ Arrays.toString(sounds));
         vibratingDotCircleView.setSounds(sounds);
     }

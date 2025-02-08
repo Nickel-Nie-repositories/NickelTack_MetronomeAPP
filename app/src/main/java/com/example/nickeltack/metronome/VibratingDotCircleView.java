@@ -277,7 +277,7 @@ public class VibratingDotCircleView extends FrameLayout {
         {
             int finalI = i;
             VibratingDotView dot = dots.get(i);
-            dot.post(()-> dot.setSoundByName(sounds[finalI]));
+            dot.post(()-> dot.setSoundByName(sounds[finalI % sounds.length]));
         }
     }
 
