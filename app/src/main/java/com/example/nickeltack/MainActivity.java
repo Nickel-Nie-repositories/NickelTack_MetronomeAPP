@@ -1,7 +1,6 @@
 package com.example.nickeltack;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -29,15 +28,14 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.fragment.app.ListFragment;
 
+import com.example.nickeltack.fragments.TestFragment1;
 import com.example.nickeltack.fragments.TestFragment2;
 import com.example.nickeltack.funclist.FileManager;
 import com.example.nickeltack.funclist.FuncListFragment;
 import com.example.nickeltack.funclist.ListDialogFragment;
 import com.example.nickeltack.funclist.ListItem;
 import com.example.nickeltack.funclist.PanelType;
-import com.example.nickeltack.metronome.CommonMetronomeFragment;
 import com.example.nickeltack.metronome.ComplexMetronomeFragment;
 import com.example.nickeltack.metronome.Metronome1Fragment;
 import com.example.nickeltack.monitor.RhythmDiagnotorFragment;
@@ -46,6 +44,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -58,6 +57,10 @@ public class MainActivity extends AppCompatActivity {
     private int selectedIconId = -1;
 
     private FileManager fileManager;
+
+    private ImageButton showListButton;
+
+    private String currPanelName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
             }
         );
 
-        ImageButton showListButton = findViewById(R.id.showListButton);
+        showListButton = findViewById(R.id.showListButton);
         showListButton.setOnClickListener(v -> {
             // 弹出 ListFragment
             showListFragment();
@@ -157,31 +160,40 @@ public class MainActivity extends AppCompatActivity {
         transaction.replace(R.id.fragmentContainerView, fragment);
         transaction.addToBackStack(null);  // 添加到回退栈，null 表示不指定名称
         transaction.commit();
+
+        hideListFragment();
     }
 
 
-    public void ChangeUserInterface(PanelType panelType)
+    public void ChangeUserInterface(ListItem listItem)
     {
+        PanelType panelType = listItem.getPanelType();
+        String Name = listItem.getPanelName();
         switch (panelType)
         {
             case COMMON_METRONOME_PANEL:
-                ChangeUserInterface(new Metronome1Fragment());
+                Metronome1Fragment panel = new Metronome1Fragment(Name);
+                ChangeUserInterface(panel);
+                //panel.load();
                 break;
 
             case COMPLEX_METRONOME_PANEL:
-                ChangeUserInterface(new ComplexMetronomeFragment());
+                ChangeUserInterface(new ComplexMetronomeFragment(Name));
                 break;
 
             case RHYTHM_DIAGNOTOR_PANEL:
-                ChangeUserInterface(new RhythmDiagnotorFragment());
+                ChangeUserInterface(new RhythmDiagnotorFragment(Name));
                 break;
 
             case STARTING_BLOCK_PANEL:
-                ChangeUserInterface(new StartingBlockFragment());
+                ChangeUserInterface(new StartingBlockFragment(Name));
+                break;
 
             default:
                 break;
         }
+        setListIcon(panelType);
+        currPanelName = Name;
     }
 
 
@@ -200,8 +212,6 @@ public class MainActivity extends AppCompatActivity {
 
         // 添加图标
         List<Integer> iconIds = new ArrayList<>(PanelType.getIcons());
-
-        // 你可以根据需要添加更多图标
 
         for (Integer iconId : iconIds) {
             ImageView imageView = new ImageView(this);
@@ -313,11 +323,42 @@ public class MainActivity extends AppCompatActivity {
     public void removePanel(ListItem item)
     {
         listFragment.removeListItem(item);
+        fileManager.removeFile(item.getPanelName());
+
+        // 如果删除的面板是当前面板，则需要返回到主题页
+        if(Objects.equals(currPanelName, item.getPanelName()))
+        {
+            ChangeUserInterface(new TestFragment1());
+            showListButton.setImageResource(R.drawable.button_logo_default);
+        }
     }
 
     public void createNewPanel(ListItem item)
     {
         addPanel(item);
+        PanelType panelType = item.getPanelType();
+        String panelName = item.getPanelName();
+        switch (panelType)
+        {
+            case COMMON_METRONOME_PANEL:
+                Metronome1Fragment.saveDefault(panelName);
+                break;
+
+            case COMPLEX_METRONOME_PANEL:
+                ComplexMetronomeFragment.saveDefault(panelName);
+                break;
+
+            case RHYTHM_DIAGNOTOR_PANEL:
+                RhythmDiagnotorFragment.saveDefault(panelName);
+                break;
+
+            case STARTING_BLOCK_PANEL:
+                StartingBlockFragment.saveDefault(panelName);
+                break;
+
+            default:
+                break;
+        }
     }
     public void addPanel(ListItem item)
     {
@@ -358,6 +399,11 @@ public class MainActivity extends AppCompatActivity {
                     }
                 })
                 .show(); // 显示对话框
+    }
+
+    private void setListIcon(PanelType panelType)
+    {
+        showListButton.setImageResource(PanelType.getIconResource(panelType));
     }
 
 

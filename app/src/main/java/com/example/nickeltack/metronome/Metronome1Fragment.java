@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +17,11 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.example.nickeltack.R;
+import com.example.nickeltack.funclist.FileManager;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
 
 
 public class Metronome1Fragment extends Fragment {
@@ -27,9 +31,14 @@ public class Metronome1Fragment extends Fragment {
     private int quarterTimeValue = 120;
     private VibratingDotCircleView vibratingDotCircleView;
 
-    private String fileName;
+    private String fileName = "";
 
     boolean isPlaying = false;
+
+    boolean isUserInteraction = false;
+    private EditText editText;
+    private Spinner spinner;
+    private ArrayAdapter<CharSequence> adapter;
 
     public Metronome1Fragment() {
         // Required empty public constructor
@@ -53,9 +62,7 @@ public class Metronome1Fragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_metronome1, container, false);
 
-        // 设置 bpm输入框的 范围：
-
-        EditText editText = rootView.findViewById(R.id.bpm_input);
+        editText = rootView.findViewById(R.id.bpm_input);
 
         editText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -86,20 +93,18 @@ public class Metronome1Fragment extends Fragment {
                     quarterTimeValue = value;
                 }
                 updateVibratingDotSetting();
+                if(isUserInteraction){save();}
             }
         });
 
 
         // 设置拍号选择的默认值
-        Spinner spinner = rootView.findViewById(R.id.beat_selector);
+        spinner = rootView.findViewById(R.id.beat_selector);
 
         // 创建适配器
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(), R.array.beat_numbers, android.R.layout.simple_spinner_item);
+        adapter = ArrayAdapter.createFromResource(getContext(), R.array.beat_numbers, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-
-        // 设置默认选中项，假设我们想选中第二个项（索引从 0 开始）
-        spinner.setSelection(0);
 
         // 拍号选择器的响应
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -110,6 +115,7 @@ public class Metronome1Fragment extends Fragment {
                 //Toast.makeText(getContext(), "选择了: " + selectedItem, Toast.LENGTH_SHORT).show();
                 timeSignature = new Fraction(selectedItem);
                 updateVibratingDotSetting();
+                if(isUserInteraction){save();}
             }
 
             @Override
@@ -120,6 +126,12 @@ public class Metronome1Fragment extends Fragment {
 
         // 振动点配置
         vibratingDotCircleView = rootView.findViewById(R.id.vibrating_dot_circle);
+        vibratingDotCircleView.setSoundChangeListener(new SoundChangeEventListener() {
+            @Override
+            public void onSoundChangeEvent(SoundChangeEvent soundChangeEvent) {
+                save();
+            }
+        });
 
         // 绑定开始/停止按钮
         Button palyButton = rootView.findViewById(R.id.play_pause_button);
@@ -127,6 +139,12 @@ public class Metronome1Fragment extends Fragment {
         palyButton.setOnClickListener((view) -> startVibrating());
         stopButton.setOnClickListener((view) -> stopVibrating());
         updateVibratingDotSetting();
+
+
+        // 载入。
+        if(!Objects.equals(fileName, "")) {load();}
+
+        spinner.post(() -> isUserInteraction = true);
 
         return rootView;
 
@@ -151,6 +169,7 @@ public class Metronome1Fragment extends Fragment {
 
     private void updateVibratingDotSetting()
     {
+        if (vibratingDotCircleView == null){return;}
         stopVibrating();
         int denominator = timeSignature.getDenominator();
         int nominator = timeSignature.getNumerator();
@@ -161,34 +180,78 @@ public class Metronome1Fragment extends Fragment {
         vibratingDotCircleView.setIntervals(intervals);
     }
 
-    private void updateSoundsSetting()
+    private void updateSoundsSetting(String[] sounds)
     {
-
+        if(vibratingDotCircleView == null){return;}
+        //Log.d("TAG_0","set sounds:"+ Arrays.toString(sounds));
+        vibratingDotCircleView.setSounds(sounds);
     }
 
-    private void updateSoundsRecord()
+    private void updateUIs()
     {
-
+        editText.setText(String.valueOf(quarterTimeValue));
+        // 设置默认选中项
+        int index = adapter.getPosition(timeSignature.toString());
+        //Log.d("TAG_0","getPosition: item:" + timeSignature.toString() + " Position: "+ index);
+        if (index > 0)
+        {
+            spinner.setSelection(index);
+        }
     }
 
 
     // 内部用于序列化的类
     public static class MetronomePanelSetting implements Serializable
     {
-        private Fraction timeSignature = new Fraction("4/4");
-        private int quarterTimeValue = 120;
-        private String[] Sounds;
+        public Fraction timeSignature = new Fraction("4/4");
+        public int quarterTimeValue = 120;
+        public String[] Sounds = {"【None】", "【None】", "【None】", "【None】"};
+
+        MetronomePanelSetting()
+        {
+
+        }
+
+        MetronomePanelSetting(Fraction timeSignature, int quarterTimeValue, String[] sounds)
+        {
+            this.quarterTimeValue = quarterTimeValue;
+            this.timeSignature = timeSignature;
+            this.Sounds = sounds;
+        }
     }
 
     public void save()
     {
+        MetronomePanelSetting setting = new MetronomePanelSetting(timeSignature, quarterTimeValue, vibratingDotCircleView.getSounds());
+        //Log.d("TAG_0", "save Panel: " +fileName+", value:" + timeSignature);
+        FileManager.getInstance("").saveObject(fileName, setting);
+    }
 
+    public static void saveDefault(String fileName)
+    {
+        MetronomePanelSetting setting = new MetronomePanelSetting();
+        FileManager.getInstance("").saveObject(fileName, setting);
     }
 
     public void load()
     {
-
+        MetronomePanelSetting setting = FileManager.getInstance("").loadObject(fileName);
+        if (setting != null)
+        {
+            //Log.d("TAG_0", "load Panel: " +fileName+", value:" + setting.timeSignature);
+            this.timeSignature = setting.timeSignature;
+            this.quarterTimeValue = setting.quarterTimeValue;
+            updateVibratingDotSetting();
+            vibratingDotCircleView.post(() -> updateSoundsSetting(setting.Sounds));
+            updateUIs();
+        }
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        stopVibrating();
+    }
 
 }

@@ -16,9 +16,11 @@ import android.widget.EditText;
 import androidx.appcompat.app.AlertDialog;
 
 import com.example.nickeltack.R;
+import com.example.nickeltack.funclist.FileManager;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Objects;
 
 
 public class ComplexMetronomeFragment extends Fragment {
@@ -30,6 +32,9 @@ public class ComplexMetronomeFragment extends Fragment {
     private String rhythmsInput = "1/4 + 1/4 + 1/8 + 1/8 + 1/8 + 1/8"; // 用于存储输入的节奏型字符串
 
     private String fileName;
+    private EditText editText;
+
+    boolean isUserInteraction = false;
 
     public ComplexMetronomeFragment() {
         // Required empty public constructor
@@ -57,7 +62,7 @@ public class ComplexMetronomeFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_complex_metronome, container, false);
 
         // 设置 bpm输入框的 范围：
-        EditText editText = rootView.findViewById(R.id.bpm_input);
+        editText = rootView.findViewById(R.id.bpm_input);
 
         editText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -88,6 +93,7 @@ public class ComplexMetronomeFragment extends Fragment {
                     quarterTimeValue = value;
                 }
                 updateVibratingDotSetting();
+                if(isUserInteraction){save();}
             }
         });
 
@@ -100,6 +106,12 @@ public class ComplexMetronomeFragment extends Fragment {
 
         // 振动点配置
         vibratingDotCircleView = rootView.findViewById(R.id.vibrating_dot_circle);
+        vibratingDotCircleView.setSoundChangeListener(new SoundChangeEventListener() {
+            @Override
+            public void onSoundChangeEvent(SoundChangeEvent soundChangeEvent) {
+                save();
+            }
+        });
 
         // 绑定开始/停止按钮
         Button palyButton = rootView.findViewById(R.id.play_pause_button);
@@ -108,6 +120,10 @@ public class ComplexMetronomeFragment extends Fragment {
         stopButton.setOnClickListener((view) -> stopVibrating());
 
         updateVibratingDotSetting();
+
+        if(!Objects.equals(fileName, "")) {load();}
+
+        editText.post(() -> isUserInteraction = true);
 
         return rootView;
     }
@@ -152,6 +168,7 @@ public class ComplexMetronomeFragment extends Fragment {
             rhythmsInput = etInput.getText().toString();
             //Toast.makeText(getContext(), "输入已保存: " + rhythmsInput, Toast.LENGTH_SHORT).show();
             updateVibratingDotSetting();
+            save();
             // 关闭对话框
             alertDialog.dismiss();
         });
@@ -228,10 +245,19 @@ public class ComplexMetronomeFragment extends Fragment {
         return ret;
     }
 
-    private void updateSoundsSetting()
-    {
 
+    private void updateSoundsSetting(String[] sounds)
+    {
+        if(vibratingDotCircleView == null){return;}
+        //Log.d("TAG_0","set sounds:"+ Arrays.toString(sounds));
+        vibratingDotCircleView.setSounds(sounds);
     }
+
+    private void updateUIs()
+    {
+        editText.setText(String.valueOf(quarterTimeValue));
+    }
+
 
     // 内部用于序列化的类
     public static class ComplexMetronomePanelSetting implements Serializable
@@ -239,16 +265,50 @@ public class ComplexMetronomeFragment extends Fragment {
         private String rhythmsInput = "1/4 + 1/4 + 1/8 + 1/8 + 1/8 + 1/8";
         private int quarterTimeValue = 120;
         private String[] Sounds;
+
+        ComplexMetronomePanelSetting()
+        {
+
+        }
+
+        ComplexMetronomePanelSetting(String rhythmsInput, int quarterTimeValue, String[] sounds)
+        {
+            this.rhythmsInput = rhythmsInput;
+            this.quarterTimeValue = quarterTimeValue;
+            this.Sounds = sounds;
+        }
+
     }
 
     public void save()
     {
+        ComplexMetronomePanelSetting setting = new ComplexMetronomePanelSetting(rhythmsInput,quarterTimeValue,vibratingDotCircleView.getSounds());
+        FileManager.getInstance("").saveObject(fileName, setting);
+    }
 
+    public static void saveDefault(String fileName)
+    {
+        ComplexMetronomePanelSetting setting = new ComplexMetronomePanelSetting();
+        FileManager.getInstance("").saveObject(fileName, setting);
     }
 
     public void load()
     {
+        ComplexMetronomePanelSetting setting = FileManager.getInstance("").loadObject(fileName);
+        if (setting == null){return;}
+        this.quarterTimeValue = setting.quarterTimeValue;
+        this.rhythmsInput = setting.rhythmsInput;
+        updateVibratingDotSetting();
+        vibratingDotCircleView.post(() -> updateSoundsSetting(setting.Sounds));
+        updateUIs();
 
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        stopVibrating();
     }
 
 }

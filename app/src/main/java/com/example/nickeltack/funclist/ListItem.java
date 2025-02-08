@@ -27,7 +27,7 @@ public class ListItem implements Serializable {
 
     public void OnClick()
     {
-        MainActivity.instance.ChangeUserInterface(this.panelType);
+        MainActivity.instance.ChangeUserInterface(this);
     }
 
     public void OnLongClick()

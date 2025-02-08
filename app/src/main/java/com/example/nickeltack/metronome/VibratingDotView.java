@@ -51,6 +51,8 @@ public class VibratingDotView extends View {
     //private Map<Integer, Integer> soundToColorMap; // 声音到颜色的映射
     private int currentColor = Color.WHITE; // 默认颜色为白色
 
+    private SoundChangeEventListener listener;
+
     public VibratingDotView(Context context) {
         super(context);
         init(context);
@@ -222,6 +224,14 @@ public class VibratingDotView extends View {
         invalidate();  // 触发视图重绘
     }
 
+    public void setSoundByName(String soundName)
+    {
+        this.soundId = audioManager.getSoundIdByName(soundName);
+        currentColor = audioManager.getColorBySoundId(soundId);
+        //Log.d("TAG_0","Set Sound: " + soundName + "color: " + currentColor);
+        invalidate();
+    }
+
     // 显示声音选择对话框
 //    private void showSoundSelectionDialog(final Context context) {
 //        new AlertDialog.Builder(context)
@@ -255,7 +265,7 @@ public class VibratingDotView extends View {
         //String[] soundOptions = this.soundOptions;
         String[] soundOptions = audioManager.getAllSoundsName();
 
-        Log.d("TAG_0", String.format("sound number: %d", soundOptions.length) );
+        //Log.d("TAG_0", String.format("sound number: %d", soundOptions.length) );
 
         // 使用自定义布局
         LinearLayout layout = new LinearLayout(getContext());
@@ -301,6 +311,8 @@ public class VibratingDotView extends View {
             itemLayout.setOnClickListener(v -> {
                 // 选择声音并设置颜色
                 setSound(index);
+                // 触发更改事件。
+                triggerEvent();
             });
         }
 
@@ -358,6 +370,20 @@ public class VibratingDotView extends View {
 //        }
 //        return super.onTouchEvent(event);
 //    }
+
+    public void setSoundChangeListener(SoundChangeEventListener soundChangeListener)
+    {
+        this.listener = soundChangeListener;
+    }
+
+    private void triggerEvent()
+    {
+        SoundChangeEvent event = new SoundChangeEvent(this);
+        if(listener != null)
+        {
+            listener.onSoundChangeEvent(event);
+        }
+    }
 
 
 }

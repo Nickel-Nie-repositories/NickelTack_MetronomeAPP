@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -34,6 +35,10 @@ public class VibratingDotCircleView extends FrameLayout {
     private double[] dotsAngles = {};
 
     private float touchX, touchY; // 用于存储触摸的 X 和 Y 坐标
+
+    private SoundChangeEventListener listener;
+
+    private String[] sounds;
 
     public VibratingDotCircleView(Context context) {
         super(context);
@@ -139,6 +144,8 @@ public class VibratingDotCircleView extends FrameLayout {
         for (int i = 0; i < numDots; i++) {
             VibratingDotView dot = new VibratingDotView(getContext());
             dot.setSize(dotSize);
+            dot.setSoundChangeListener(listener);
+            if(sounds != null && sounds.length != 0 ){dot.setSoundByName(sounds[i % sounds.length]);}
             // 将控件添加到父视图
             this.addView(dot); // 添加到当前视图
             //dot.setClickable(true); // 确保每个振动点可以响应点击事件
@@ -149,21 +156,6 @@ public class VibratingDotCircleView extends FrameLayout {
         //startVibration();
     }
 
-    public void updateDotsNonUniform()
-    {
-        dots.clear();
-        dotSize = 30f - (numDots * 1f); // 根据振动点数量调整大小
-
-        // 创建振动点
-        for (int i = 0; i < numDots; i++) {
-            VibratingDotView dot = new VibratingDotView(getContext());
-            dot.setSize(dotSize);
-            // 将控件添加到父视图
-            this.addView(dot); // 添加到当前视图
-            //dot.setClickable(true); // 确保每个振动点可以响应点击事件
-            dots.add(dot);
-        }
-    }
 
     // 设置振动点数量
     public void setNumDots(int numDots) {
@@ -276,6 +268,25 @@ public class VibratingDotCircleView extends FrameLayout {
             sounds[i] = dots.get(i).getSoundName();
         }
         return sounds;
+    }
+
+    public void setSounds(String[] sounds)
+    {
+        this.sounds = sounds;
+        for (int i = 0; i< dots.size(); i++)
+        {
+            int finalI = i;
+            VibratingDotView dot = dots.get(i);
+            dot.post(()-> dot.setSoundByName(sounds[finalI]));
+        }
+    }
+
+    public void setSoundChangeListener(SoundChangeEventListener soundChangeListener)
+    {
+        listener = soundChangeListener;
+        for (VibratingDotView dot:dots) {
+            dot.setSoundChangeListener(listener);
+        }
     }
 
 }

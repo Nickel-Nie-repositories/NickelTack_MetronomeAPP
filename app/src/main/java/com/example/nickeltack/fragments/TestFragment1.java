@@ -111,19 +111,19 @@ public class TestFragment1 extends Fragment {
 //        Button button2 = rootView.findViewById(R.id.button2);
 //        button2.setOnClickListener(view -> waveformView.startRecording());
 
-        WaveformCircleView waveformCircleView = rootView.findViewById(R.id.vibratingDotViewTest1);
+//        WaveformCircleView waveformCircleView = rootView.findViewById(R.id.vibratingDotViewTest1);
         requestAudioPermission();
-        waveformCircleView.vibrate(1f);
-        Button button2 = rootView.findViewById(R.id.button2);
+//        waveformCircleView.vibrate(1f);
+//        Button button2 = rootView.findViewById(R.id.button2);
         //button2.setOnClickListener(view -> waveformCircleView.startRecording());
 
 
-        CheckableCirclesBar checkalbeCirclesBar = rootView.findViewById(R.id.checkableCirclesBar);
-        button2.setOnClickListener(view -> {
-            checkalbeCirclesBar.setCheck(index,true);
-            index = (index+1) %4;
-        }
-        );
+//        CheckableCirclesBar checkalbeCirclesBar = rootView.findViewById(R.id.checkableCirclesBar);
+//        button2.setOnClickListener(view -> {
+//            checkalbeCirclesBar.setCheck(index,true);
+//            index = (index+1) %4;
+//        }
+//        );
 
 //        VibratingDotCircleView vibratingDotCircleView = rootView.findViewById(R.id.vibratingDotCircleViewTest);
 //        vibratingDotCircleView.setNumDots(6);
@@ -131,7 +131,7 @@ public class TestFragment1 extends Fragment {
 //        vibratingDotCircleView.setDotsAngles(new double[]{Math.PI/2,Math.PI/2,Math.PI/4,Math.PI/4,Math.PI/4});
 //        vibratingDotCircleView.startNonUniformVibrating();
 
-        MultiVibratingDotView multiVibratingDotView = rootView.findViewById(R.id.vibratingDotCircleViewTest);
+//        MultiVibratingDotView multiVibratingDotView = rootView.findViewById(R.id.vibratingDotCircleViewTest);
 
 //        vibratingDotCircleView.stopNonUniformVibrating();
 //        vibratingDotCircleView.setNumDots(5);

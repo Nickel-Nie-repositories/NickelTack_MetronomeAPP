@@ -1,5 +1,7 @@
 package com.example.nickeltack.funclist;
 
+import android.util.Log;
+
 import java.io.*;
 import java.nio.file.*;
 
@@ -52,9 +54,16 @@ public class FileManager {
 
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
             return (T) in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Log.d("TAG_0", e.toString());
         }
         return null;
+    }
+
+    public boolean removeFile(String fileName){
+        File file = new File(directory, fileName + ".ntr");
+        if (file.exists()) {
+            return file.delete();}
+        return false;
     }
 }

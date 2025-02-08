@@ -26,6 +26,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.nickeltack.R;
+import com.example.nickeltack.funclist.FileManager;
 import com.example.nickeltack.metronome.AudioManager;
 import com.example.nickeltack.metronome.Fraction;
 
@@ -132,6 +133,8 @@ public class StartingBlockFragment extends Fragment {
             }
         });
 
+        if(!Objects.equals(fileName, "")) {load();}
+
         // Disable start button if the game is paused
         updateStartButtonState();
 
@@ -153,7 +156,7 @@ public class StartingBlockFragment extends Fragment {
         // Handle start logic here
         if (!isPlaying) {
             // Do the initialization or start logic
-            isStarted = true;
+            //isStarted = true;
             showStartingDialog(getContext());
 
         }
@@ -206,10 +209,12 @@ public class StartingBlockFragment extends Fragment {
     // 计算并启动节拍，根据已经记录的重音的间隔计算节拍的间隔，
     private void calculateAndStartBeats()
     {
+        isStarted = true;
         long[] differences = CalculateUtils.calculateDifferences(accentTimes);
         //Log.d("TAG_0","get differences.");
         interval = Math.toIntExact(Objects.requireNonNull(AverageAlgorithm.AverageAlgorithms.get(AverageMode)).apply(differences));
         //Log.d("TAG_0","get interval.");
+        save();
 
         onPlayPauseButtonClicked();
     }
@@ -321,6 +326,7 @@ public class StartingBlockFragment extends Fragment {
                 soundsList.add(data);
             }
             setVibratingDotSounds();
+            save();
             dialog.dismiss();
         });
 
@@ -535,6 +541,8 @@ public class StartingBlockFragment extends Fragment {
            startingAccentCount = Integer.parseInt(editTextStartingBeat.getText().toString());
            AverageMode = averageAlgorithms[averageModeSpinner.getSelectedItemPosition()];
            waveformCircle.SetListenerArguments(this.threshold,this.risingEdgeThreshold,this.fallingEdgeThreshold,this.refractoryPeriod);
+
+           save();
            dialog.dismiss();
         });
 
@@ -588,16 +596,58 @@ public class StartingBlockFragment extends Fragment {
         private int risingEdgeThreshold = 7800;
         private int refractoryPeriod = 200;
         private int fallingEdgeThreshold = 6800;
+
+        public StartingBlockPanelSetting() {
+            soundsList.add(new ItemData("【None】", 50));
+        }
+
+        public StartingBlockPanelSetting(AverageAlgorithm averageMode, int interval, int startingAccentCount, boolean isStarted, List<ItemData> soundsList, int threshold, int risingEdgeThreshold, int refractoryPeriod, int fallingEdgeThreshold) {
+            this.AverageMode = averageMode;
+            this.interval = interval;
+            this.startingAccentCount = startingAccentCount;
+            this.isStarted = isStarted;
+            this.soundsList = soundsList;
+            this.threshold = threshold;
+            this.risingEdgeThreshold = risingEdgeThreshold;
+            this.refractoryPeriod = refractoryPeriod;
+            this.fallingEdgeThreshold = fallingEdgeThreshold;
+        }
     }
 
     public void save()
     {
+        StartingBlockPanelSetting setting = new StartingBlockPanelSetting(AverageMode,interval,startingAccentCount,isStarted,soundsList,threshold,risingEdgeThreshold,refractoryPeriod,fallingEdgeThreshold);
+        FileManager.getInstance("").saveObject(fileName, setting);
+    }
 
+    public static void saveDefault(String fileName)
+    {
+        StartingBlockPanelSetting setting = new StartingBlockPanelSetting();
+        FileManager.getInstance("").saveObject(fileName, setting);
     }
 
     public void load()
     {
+        StartingBlockPanelSetting setting = FileManager.getInstance("").loadObject(fileName);
+        if (setting == null){return;}
+        this.AverageMode = setting.AverageMode;
+        this.startingAccentCount = setting.startingAccentCount;
+        this.isStarted = setting.isStarted;
+        this.soundsList = setting.soundsList;
+        this.threshold = setting.threshold;
+        this.risingEdgeThreshold = setting.risingEdgeThreshold;
+        this.refractoryPeriod = setting.refractoryPeriod;
+        this.fallingEdgeThreshold = setting.fallingEdgeThreshold;
+    }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if (isPlaying) {
+            isPlaying = false;
+            stopVibration();
+        }
     }
 
 

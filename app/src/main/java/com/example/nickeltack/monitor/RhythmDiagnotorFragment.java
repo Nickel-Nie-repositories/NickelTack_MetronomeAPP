@@ -26,7 +26,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.nickeltack.R;
+import com.example.nickeltack.funclist.FileManager;
 import com.example.nickeltack.metronome.ColorManager;
+import com.example.nickeltack.metronome.ComplexMetronomeFragment;
 import com.example.nickeltack.metronome.Fraction;
 import com.example.nickeltack.starting.AccentEvent;
 import com.example.nickeltack.starting.AccentEventListener;
@@ -36,6 +38,7 @@ import com.example.nickeltack.starting.StartingBlockFragment;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Objects;
 
 
 public class RhythmDiagnotorFragment extends Fragment {
@@ -115,6 +118,8 @@ public class RhythmDiagnotorFragment extends Fragment {
         // 设置按钮点击事件
         setupButtons();
 
+        if(!Objects.equals(fileName, "")) {load();}
+
         return view;
     }
 
@@ -148,6 +153,7 @@ public class RhythmDiagnotorFragment extends Fragment {
 
     private void stopRecording() {
         waveformView.stopRecording();
+        save();
     }
 
     private void exportFile() {
@@ -444,6 +450,7 @@ public class RhythmDiagnotorFragment extends Fragment {
             relativeTolerance = Integer.parseInt(editTextRelativeTolerance.getText().toString()) / 100f;
             absoluteTolerance = Integer.parseInt(editTextAbsoluteTolerance.getText().toString());
 
+            save();
             dialog.dismiss();
         });
 
@@ -498,18 +505,64 @@ public class RhythmDiagnotorFragment extends Fragment {
         private boolean isAbsoluteToleranceEnabled = false; // 是否启用绝对容差
         private float relativeTolerance = 0.1f; // 相对容差，为百分比转换而来的小数，bpm的差距高于该值则说明节奏过快或过慢
         private int absoluteTolerance = 100; //绝对容差，单位毫秒，时值差值超出该值则说明节奏过快或过慢
+        private String log = "";
 
+        RhythmDiagnotorPanelSetting()
+        {
+
+        }
+
+        public RhythmDiagnotorPanelSetting(int threshold, int risingEdgeThreshold, int refractoryPeriod, int fallingEdgeThreshold, ReferenceSourceModel referenceSourceModel, int settingReferenceBPM, boolean isRelativeToleranceEnabled, boolean isAbsoluteToleranceEnabled, float relativeTolerance, int absoluteTolerance, String log) {
+            this.threshold = threshold;
+            this.risingEdgeThreshold = risingEdgeThreshold;
+            this.refractoryPeriod = refractoryPeriod;
+            this.fallingEdgeThreshold = fallingEdgeThreshold;
+            this.referenceSourceModel = referenceSourceModel;
+            this.settingReferenceBPM = settingReferenceBPM;
+            this.isRelativeToleranceEnabled = isRelativeToleranceEnabled;
+            this.isAbsoluteToleranceEnabled = isAbsoluteToleranceEnabled;
+            this.relativeTolerance = relativeTolerance;
+            this.absoluteTolerance = absoluteTolerance;
+            this.log = log;
+        }
 
     }
 
     public void save()
     {
+        RhythmDiagnotorPanelSetting setting = new RhythmDiagnotorPanelSetting(threshold, risingEdgeThreshold,refractoryPeriod,fallingEdgeThreshold,referenceSourceModel,settingReferenceBPM,isRelativeToleranceEnabled,isAbsoluteToleranceEnabled,relativeTolerance,absoluteTolerance,logTextView.getText().toString());
+        FileManager.getInstance("").saveObject(fileName, setting);
+    }
 
+    public static void saveDefault(String fileName)
+    {
+        RhythmDiagnotorPanelSetting setting = new RhythmDiagnotorPanelSetting();
+        FileManager.getInstance("").saveObject(fileName, setting);
     }
 
     public void load()
     {
+        RhythmDiagnotorPanelSetting setting = FileManager.getInstance("").loadObject(fileName);
+        if (setting == null){return;}
+        this.threshold = setting.threshold;
+        this.risingEdgeThreshold = setting.risingEdgeThreshold;
+        this.refractoryPeriod = setting.refractoryPeriod;
+        this.fallingEdgeThreshold = setting.fallingEdgeThreshold;
+        this.referenceSourceModel = setting.referenceSourceModel;
+        this.settingReferenceBPM = setting.settingReferenceBPM;
+        this.isRelativeToleranceEnabled = setting.isRelativeToleranceEnabled;
+        this.isAbsoluteToleranceEnabled = setting.isAbsoluteToleranceEnabled;
+        this.relativeTolerance = setting.relativeTolerance;
+        this.absoluteTolerance = setting.absoluteTolerance;
 
+        this.logTextView.post(()-> logTextView.setText(setting.log));
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        stopRecording();
     }
 
 

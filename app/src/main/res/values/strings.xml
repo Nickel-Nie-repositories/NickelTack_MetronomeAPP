@@ -4,13 +4,12 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="fuck_android_studio">Fuck Android Studio</string>
+    <string name="fuck_android_studio">Create or select a panel to start.</string>
 
     <string-array name="beat_numbers">
         <item>4/4</item>
         <item>1/4</item>
         <item>2/4</item>
-        <item>1/1</item>
         <item>2/2</item>
         <item>3/4</item>
         <item>3/8</item>

@@ -117,7 +117,7 @@ public class FuncListFragment extends Fragment {
     {
 
         File file = new File(requireContext().getFilesDir(), recordFileName);
-        Log.d("TAG_0","file open");
+
         if (!file.exists()) {
             return;
         }
@@ -130,7 +130,7 @@ public class FuncListFragment extends Fragment {
             for (ListItem listItem : temp) {
                 int insertIndex = itemList.size();
                 itemList.add(insertIndex, listItem);
-                Log.d("TAG_0","load:" + listItem.getPanelName());
+                //Log.d("TAG_0","————list load:" + listItem.getPanelName());
             }
 
             //adapter.notifyDataSetChanged();

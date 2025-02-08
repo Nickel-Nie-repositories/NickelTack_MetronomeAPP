@@ -12,34 +12,22 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:text="@string/fuck_android_studio"
-        android:textSize="96sp" />
+        android:layout_marginBottom="180dp"
+        android:textSize="50sp" />
 
-    <com.example.nickeltack.starting.WaveformCircleView
-        android:id="@+id/vibratingDotViewTest1"
-        android:layout_gravity="center_horizontal|bottom"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:layout_marginBottom="150dp"/>
 
-    <com.example.nickeltack.starting.MultiVibratingDotView
-        android:id="@+id/vibratingDotCircleViewTest"
+    <ImageView
+        android:id="@+id/image_for_arrow"
         android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_height="200dp"
         android:layout_gravity="center_horizontal|top"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="50dp"
+        android:alpha="0.3"
+        android:contentDescription="Arrow"
+        android:src="@drawable/curve_arrow_1" />
 
-    <com.example.nickeltack.starting.CheckableCirclesBar
-        android:id="@+id/checkableCirclesBar"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_margin="20dp"
-        android:layout_gravity="bottom"/>
 
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Button" />
+
 
 </FrameLayout>
